@@ -1,0 +1,6 @@
+{
+  "error_generic": "Something went wrong. Please try again.",
+  "error_network": "Network error. Please check your internet connection.",
+  "error_database": "Database error.",
+  "error_permission": "Required permission was not granted."
+}

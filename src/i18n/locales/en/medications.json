@@ -1,0 +1,14 @@
+{
+  "medications": "Medications",
+  "add_medication": "Add Medication",
+  "edit_medication": "Edit Medication",
+  "medication_name": "Medication Name",
+  "dosage": "Dosage",
+  "frequency": "Frequency",
+  "pill_count": "Pill Count",
+  "notes": "Notes",
+  "search_medications": "Search Medications",
+  "mark_taken": "Marked as Taken",
+  "mark_missed": "Marked as Missed",
+  "mark_skipped": "Marked as Skipped"
+}
