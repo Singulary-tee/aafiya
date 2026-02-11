@@ -6,8 +6,14 @@
 import * as Crypto from 'expo-crypto';
 
 export async function encryptData(data: string, key: string): Promise<string> {
-  const encrypted = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, data + key);
-  return encrypted;
+  const iv = Crypto.getRandomBytes(16);
+  const encrypted = await Crypto.encryptAsStringAsync(data, key, {
+    iv: iv,
+    keySize: 256,
+    mode: Crypto.CryptoCipherMode.CBC,
+    padding: Crypto.CryptoEncoding.PKCS7,
+  });
+  return `${iv.toString()}:${encrypted}`;
 }
 
 export async function hashString(string: string): Promise<string> {

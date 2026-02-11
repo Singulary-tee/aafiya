@@ -1,0 +1,1 @@
+// Placeholder for components/medication/PillImage.tsx

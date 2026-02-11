@@ -62,7 +62,7 @@ export function calculateStreak(doseLogs: Array<{ status: string; scheduled_time
   const sortedLogs = [...doseLogs].sort((a, b) => b.scheduled_time - a.scheduled_time);
 
   for (const log of sortedLogs) {
-    if (log.status === 'taken' || log.status === 'late') {
+    if (log.status === 'taken') {
       streak++;
     } else {
       break;

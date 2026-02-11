@@ -47,6 +47,14 @@ export async function getNotificationSettings(): Promise<Record<string, unknown>
   return value ? JSON.parse(value) : {};
 }
 
+export async function setThemeMode(theme: string): Promise<void> {
+    await AsyncStorage.setItem(STORAGE_KEYS.THEME_MODE, theme);
+}
+
+export async function getThemeMode(): Promise<string | null> {
+    return AsyncStorage.getItem(STORAGE_KEYS.THEME_MODE);
+}
+
 export async function clearAppStorage(): Promise<void> {
   const keys = Object.values(STORAGE_KEYS);
   await AsyncStorage.multiRemove(keys);
