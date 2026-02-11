@@ -1,0 +1,6 @@
+{
+  "reminder": "تذكير: حان وقت تناول دواء {{medication_name}}",
+  "missed_dose": "لم تؤخذ جرعة من {{medication_name}} في الوقت المحدد",
+  "refill_needed": "يحتاج {{medication_name}} إلى تعبئة",
+  "helper_notification": "يحتاج أحد المريضين إلى ملاحظة"
+}

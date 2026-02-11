@@ -1,0 +1,14 @@
+{
+  "medications": "الأدوية",
+  "add_medication": "إضافة دواء",
+  "edit_medication": "تعديل الدواء",
+  "medication_name": "اسم الدواء",
+  "dosage": "الجرعة",
+  "frequency": "التكرار",
+  "pill_count": "عدد الحبات",
+  "notes": "ملاحظات",
+  "search_medications": "بحث في الأدوية",
+  "mark_taken": "تم تناول الجرعة",
+  "mark_missed": "لم تؤخذ الجرعة",
+  "mark_skipped": "تم تجاوز الجرعة"
+}

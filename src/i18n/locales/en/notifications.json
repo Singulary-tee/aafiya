@@ -1,0 +1,6 @@
+{
+  "reminder": "Reminder: Time to take {{medication_name}}",
+  "missed_dose": "Missed dose: {{medication_name}} was not taken at scheduled time",
+  "refill_needed": "{{medication_name}} needs refill",
+  "helper_notification": "A patient needs attention"
+}
