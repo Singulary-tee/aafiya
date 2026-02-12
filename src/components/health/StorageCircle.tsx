@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
-import { ThemedText } from '@/components/themed-text';
 
 interface StorageCircleProps {
   daysRemaining: number;

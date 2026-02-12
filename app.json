@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "aafiya",
+    "name": "عافية",
     "slug": "aafiya",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,9 +8,7 @@
     "scheme": "aafiya",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
+    
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -19,7 +17,31 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.medicationtracker.app",
+      "permissions": [
+        "SCHEDULE_EXACT_ALARM",
+        "POST_NOTIFICATIONS",
+        "USE_EXACT_ALARM",
+        "CAMERA",
+        "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_CONTACTS",
+        "WRITE_CONTACTS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.medicationtracker.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Camera access is required to scan QR codes for helper pairing.",
+        "NSMicrophoneUsageDescription": "This app does not use the microphone."
+      }
     },
     "web": {
       "output": "static",
@@ -27,6 +49,17 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#4CAF50",
+          "sounds": [
+            "./assets/sounds/pill-reminder.wav"
+          ],
+          "mode": "production"
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -38,11 +71,27 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Camera access is required to scan QR codes for helper pairing."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "YOUR_PROJECT_ID_HERE"
+      }
     }
   }
 }

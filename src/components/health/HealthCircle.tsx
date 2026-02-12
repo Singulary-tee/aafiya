@@ -1,9 +1,9 @@
 
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import Svg, { Circle, Text as SvgText } from 'react-native-svg';
-import { ThemedText } from '@/components/themed-text';
 import { COLORS } from '@/constants/colors';
+import { ThemedText } from '@/src/components/themed-text';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 // Props as defined in the blueprint
 interface HealthCircleProps {

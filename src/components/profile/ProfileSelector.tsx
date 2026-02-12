@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList } from 'react-native';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
 import { Profile } from '@/database/models/Profile';
+import { ThemedText } from '@/src/components/themed-text';
+import { ThemedView } from '@/src/components/themed-view';
+import React, { useState } from 'react';
+import { FlatList, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface ProfileSelectorProps {
   profiles: Profile[];
