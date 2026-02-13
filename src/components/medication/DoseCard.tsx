@@ -48,8 +48,8 @@ const DoseCard: React.FC<DoseCardProps> = ({ medication, scheduledTime, status, 
         </View>
         {status === 'pending' ? (
           <View style={styles.actions}>
-            <Button title="buttons.take" onPress={onTake} variant="primary" style={styles.button} />
-            <Button title="buttons.skip" onPress={onSkip} variant="secondary" style={styles.button} />
+            <Button title={t('buttons.take')} onPress={onTake} variant="primary" style={styles.button} />
+            <Button title={t('buttons.skip')} onPress={onSkip} variant="secondary" style={styles.button} />
           </View>
         ) : (
           <Text style={[styles.statusText, text]}>{t(`status.${status}`)}</Text>

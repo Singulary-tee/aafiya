@@ -6,5 +6,10 @@
   "medications_today": "الأدوية اليوم",
   "no_medications": "لا توجد أدوية اليوم",
   "view_all": "عرض الكل",
-  "recent_activity": "النشاط الأخير"
+  "recent_activity": "النشاط الأخير",
+  "automatically_logged_as_missed": "تم تسجيله تلقائيًا على أنه فائت",
+  "todays_doses": "جرعات اليوم",
+  "healthStatus": "الحالة الصحية",
+  "storage_levels": "مستويات التخزين",
+  "add_new_medication": "إضافة دواء جديد"
 }

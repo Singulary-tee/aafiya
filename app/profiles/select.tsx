@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { useProfile } from '@/src/hooks/useProfile';
@@ -10,16 +10,16 @@ import { COLORS } from '@/src/constants/colors';
 
 export default function SelectProfileScreen() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
   const { switchProfile } = useProfile();
 
   useEffect(() => {
-    if (db) {
+    if (!isDbLoading && db) {
       const profileRepo = new ProfileRepository(db);
       profileRepo.findAll().then(setProfiles);
     }
-  }, [db]);
+  }, [db, isDbLoading]);
 
   const handleSelectProfile = (profile: Profile) => {
     switchProfile(profile.id);
@@ -32,6 +32,10 @@ export default function SelectProfileScreen() {
       <Text style={styles.profileName}>{item.name}</Text>
     </TouchableOpacity>
   );
+
+  if (isDbLoading) {
+    return <ActivityIndicator style={styles.centered} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -57,6 +61,11 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: COLORS.background,
   },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -71,7 +80,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: COLORS.divider,
   },
   avatar: {
     width: 40,

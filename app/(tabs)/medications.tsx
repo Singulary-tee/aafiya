@@ -6,11 +6,13 @@ import { useMedications } from '@/src/hooks/useMedications';
 import { Medication } from '@/src/database/models/Medication';
 import { COLORS } from '@/src/constants/colors';
 import { useProfile } from '@/src/hooks/useProfile';
+import { useTranslation } from 'react-i18next';
 
 export default function MedicationsScreen() {
   const { activeProfile } = useProfile();
   const { medications } = useMedications(activeProfile?.id || '');
   const router = useRouter();
+  const { t } = useTranslation('home');
 
   const renderMedication = ({ item }: { item: Medication }) => (
     <TouchableOpacity style={styles.medicationItem} onPress={() => router.push(`/medications/${item.id}`)}>
@@ -31,7 +33,7 @@ export default function MedicationsScreen() {
         style={styles.list}
       />
       <Button
-        title="Add New Medication"
+        title={t('add_new_medication')}
         onPress={() => router.push('/medications/add')}
       />
     </View>

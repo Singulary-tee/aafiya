@@ -29,10 +29,10 @@ type Dose = {
 
 export default function HomeScreen() {
   const { t } = useTranslation('home');
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const { activeProfile } = useProfile();
-  const { medications, isLoading: medsLoading } = useMedications(activeProfile?.id || '');
-  const { healthScore, refreshHealthScore } = useHealthScore(activeProfile?.id || '');
+  const { medications, isLoading: medsLoading } = useMedications(activeProfile?.id || null);
+  const { healthScore, refreshHealthScore } = useHealthScore(activeProfile?.id || null);
   const [scoreLoading, setScoreLoading] = useState(false);
   const [todayDoses, setTodayDoses] = useState<Dose[]>([]);
 
@@ -77,7 +77,7 @@ export default function HomeScreen() {
                   scheduled_time: scheduledDateTime.getTime(),
                   status: 'missed',
                   actual_time: null,
-                  notes: 'Automatically logged as missed',
+                  notes: t('automatically_logged_as_missed'),
                 });
                 needsScoreRefresh = true;
               }
@@ -99,7 +99,7 @@ export default function HomeScreen() {
     if (needsScoreRefresh) {
       refreshScore();
     }
-  }, [medications, db, refreshScore, activeProfile]);
+  }, [medications, db, refreshScore, activeProfile, t]);
 
   useEffect(() => {
     loadDoses();
@@ -148,7 +148,7 @@ export default function HomeScreen() {
   }, [medications, db]);
 
 
-  if (medsLoading || scoreLoading) {
+  if (isDbLoading || medsLoading || scoreLoading) {
     return <ActivityIndicator style={styles.centered} />;
   }
 
@@ -179,9 +179,9 @@ export default function HomeScreen() {
 
       <View style={styles.dosesSection}>
         <Text style={styles.subHeader}>{t('todays_doses')}</Text>
-        {todayDoses.map((dose, index) => (
+        {todayDoses.map((dose) => (
           <DoseCard
-            key={index}
+            key={`${dose.medication.id}-${dose.scheduledTime}`}
             {...dose}
             onTake={() => handleLogDose(dose, 'taken')}
             onSkip={() => handleLogDose(dose, 'skipped')}

@@ -1,36 +1,39 @@
-/**
- * i18n Configuration
- * Initialize i18next for Arabic and English translations
- */
 
-import * as Localization from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { I18nManager } from 'react-native';
-import { resources } from './resources';
+import resources from './resources';
+import languageDetector from './languageDetector';
 
-// Detect device language
-const deviceLanguage = Localization.getLocales()[0]?.languageCode || 'en';
-const isArabic = deviceLanguage.startsWith('ar');
-
-// Set RTL for Arabic
-if (isArabic) {
-  I18nManager.forceRTL(true);
-}
-
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: isArabic ? 'ar' : 'en',
-    defaultNS: 'common',
-    ns: ['common', 'home', 'medications', 'settings', 'errors', 'notifications'],
-    interpolation: {
-      escapeValue: false,
-    },
-    react: {
-      useSuspense: false,
-    },
+const initializeI18n = async () => {
+  const lng = await new Promise<string>((resolve) => {
+    languageDetector.detect((detectedLng) => {
+      resolve(detectedLng);
+    });
   });
+
+  const isRTL = lng === 'ar';
+  I18nManager.forceRTL(isRTL);
+  I18nManager.allowRTL(isRTL);
+
+  await i18n
+    .use(languageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng,
+      fallbackLng: 'en',
+      defaultNS: 'common',
+      ns: ['common', 'home', 'medications', 'settings', 'errors', 'notifications', 'profiles'],
+      interpolation: {
+        escapeValue: false,
+      },
+      react: {
+        useSuspense: false,
+      },
+    });
+};
+
+export const i18nInitialization = initializeI18n();
 
 export default i18n;

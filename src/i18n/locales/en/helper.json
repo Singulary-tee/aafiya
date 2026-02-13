@@ -1,0 +1,5 @@
+{
+  "status_unpaired": "Not Paired with a Helper",
+  "status_pending": "Pairing Request Pending",
+  "status_paired": "Paired with a Helper"
+}

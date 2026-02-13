@@ -10,5 +10,20 @@
   "search_medications": "بحث في الأدوية",
   "mark_taken": "تم تناول الجرعة",
   "mark_missed": "لم تؤخذ الجرعة",
-  "mark_skipped": "تم تجاوز الجرعة"
+  "mark_skipped": "تم تجاوز الجرعة",
+  "current_count": "العدد الحالي: ",
+  "initial_count": "العدد الأولي: ",
+  "edit": "تعديل",
+  "delete": "حذف",
+  "add_medication_title": "إضافة دواء",
+  "medication_name_placeholder": "اسم الدواء",
+  "strength_placeholder": "التركيز (مثال: 500 ملجم)",
+  "initial_count_placeholder": "العدد الأولي",
+  "time_placeholder": "الوقت (مثال: 09:00)",
+  "medication_name_label": "اسم الدواء",
+  "strength_label": "التركيز",
+  "current_count_label": "العدد الحالي",
+  "update_medication_button": "تحديث الدواء",
+  "search_placeholder": "بحث...",
+  "search_medications_placeholder": "بحث في الأدوية..."
 }

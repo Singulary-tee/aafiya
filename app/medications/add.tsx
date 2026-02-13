@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Switch } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { useProfile } from '@/src/hooks/useProfile';
@@ -8,103 +8,105 @@ import { MedicationRepository } from '@/src/database/repositories/MedicationRepo
 import { ScheduleRepository } from '@/src/database/repositories/ScheduleRepository';
 import { Medication } from '@/src/database/models/Medication';
 import { Schedule } from '@/src/database/models/Schedule';
+import { logger } from '@/src/utils/logger';
+import { useTranslation } from 'react-i18next';
 
 export default function AddMedicationScreen() {
-  const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [strength, setStrength] = useState('');
   const [initialCount, setInitialCount] = useState('');
-  const [times, setTimes] = useState<string[]>(['09:00']);
-  const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
+  const [time, setTime] = useState('09:00'); // Simplified to one time
 
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
   const { activeProfile } = useProfile();
-
-  const handleNextStep = () => {
-    if (name.trim() !== '' && initialCount.trim() !== '') {
-      setStep(2);
-    }
-  };
+  const { t } = useTranslation(['medications']);
 
   const handleAddMedication = async () => {
-    if (!db || !activeProfile || times.length === 0) {
+    logger.log('Attempting to add medication...');
+    if (!db || !activeProfile || !name.trim() || !initialCount.trim() || !time.trim()) {
+      logger.error('Validation failed', { hasDb: !!db, hasProfile: !!activeProfile, name, initialCount, time });
       return;
     }
 
-    const medicationRepo = new MedicationRepository(db);
-    const scheduleRepo = new ScheduleRepository(db);
+    try {
+      const medicationRepo = new MedicationRepository(db);
+      const scheduleRepo = new ScheduleRepository(db);
 
-    const newMedication: Omit<Medication, 'id' | 'created_at' | 'updated_at'> = {
-      profile_id: activeProfile.id,
-      name,
-      strength,
-      initial_count: parseInt(initialCount, 10),
-      current_count: parseInt(initialCount, 10),
-      is_active: 1,
-      rxcui: null,
-      generic_name: null,
-      brand_name: null,
-      dosage_form: null,
-      image_url: null,
-      notes: null,
-    };
+      const newMedication: Omit<Medication, 'id' | 'created_at' | 'updated_at'> = {
+        profile_id: activeProfile.id,
+        name,
+        strength,
+        initial_count: parseInt(initialCount, 10),
+        current_count: parseInt(initialCount, 10),
+        is_active: 1,
+        rxcui: null,
+        generic_name: null,
+        brand_name: null,
+        dosage_form: null,
+        image_url: null,
+        notes: null,
+      };
 
-    const createdMedication = await medicationRepo.create(newMedication);
+      logger.log('Creating medication:', newMedication);
+      const createdMedication = await medicationRepo.create(newMedication);
+      logger.log('Created medication:', createdMedication);
 
-    const newSchedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at'> = {
-      medication_id: createdMedication.id,
-      times,
-      days_of_week: daysOfWeek.length > 0 ? daysOfWeek : null,
-      grace_period_minutes: 15,
-      is_active: 1,
-      notification_sound: null,
-    };
 
-    await scheduleRepo.create(newSchedule as Schedule);
+      if (!createdMedication || !createdMedication.id) {
+        logger.error('Medication creation failed, returned medication is invalid.', createdMedication);
+        return;
+      }
 
-    router.replace('/(tabs)/medications');
+
+      const newSchedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at'> = {
+        medication_id: createdMedication.id,
+        times: [time],
+        days_of_week: null, // For simplicity, daily
+        grace_period_minutes: 15,
+        is_active: 1,
+        notification_sound: null,
+      };
+
+      logger.log('Creating schedule:', newSchedule);
+      await scheduleRepo.create(newSchedule as Schedule);
+      logger.log('Schedule created');
+
+      router.replace('/(tabs)/medications');
+    } catch (error) {
+      logger.error('Error adding medication:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {step === 1 && (
-        <>
-          <Text style={styles.title}>Add Medication</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Medication Name"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Strength (e.g., 500mg)"
-            value={strength}
-            onChangeText={setStrength}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Initial Count"
-            value={initialCount}
-            onChangeText={setInitialCount}
-            keyboardType="numeric"
-          />
-          <Button title="Next" onPress={handleNextStep} />
-        </>
-      )}
-
-      {step === 2 && (
-        <>
-          <Text style={styles.title}>Set Schedule</Text>
-          {/* A simple time and day picker would go here */}
-          <Text>Times per day: {times.length}</Text>
-          <Text>Days of week: {daysOfWeek.join(', ')}</Text>
-
-          <Button title="Add Medication" onPress={handleAddMedication} />
-          <Button title="Back" onPress={() => setStep(1)} />
-        </>
-      )}
+      <Text style={styles.title}>{t('add_medication_title')}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder={t('medication_name_placeholder')}
+        value={name}
+        onChangeText={setName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t('strength_placeholder')}
+        value={strength}
+        onChangeText={setStrength}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t('initial_count_placeholder')}
+        value={initialCount}
+        onChangeText={setInitialCount}
+        keyboardType="numeric"
+      />
+       <TextInput
+        style={styles.input}
+        placeholder={t('time_placeholder')}
+        value={time}
+        onChangeText={setTime}
+      />
+      <Button title={t('add_medication')} onPress={handleAddMedication} disabled={isDbLoading} />
     </View>
   );
 }

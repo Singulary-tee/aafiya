@@ -6,19 +6,21 @@ import { useDatabase } from '@/src/hooks/useDatabase';
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
 import { Medication } from '@/src/database/models/Medication';
 import { COLORS } from '@/src/constants/colors';
+import { useTranslation } from 'react-i18next';
 
 export default function MedicationDetailScreen() {
   const { id } = useLocalSearchParams();
   const [medication, setMedication] = useState<Medication | null>(null);
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
+  const { t } = useTranslation(['medications']);
 
   useEffect(() => {
-    if (db && id) {
+    if (!isDbLoading && db && id) {
       const medicationRepo = new MedicationRepository(db);
       medicationRepo.findById(id as string).then(setMedication);
     }
-  }, [db, id]);
+  }, [db, id, isDbLoading]);
 
   const handleDelete = async () => {
     if (db && id) {
@@ -28,7 +30,7 @@ export default function MedicationDetailScreen() {
     }
   };
 
-  if (!medication) {
+  if (isDbLoading || !medication) {
     return <ActivityIndicator />;
   }
 
@@ -36,12 +38,12 @@ export default function MedicationDetailScreen() {
     <View style={styles.container}>
       <Text style={styles.name}>{medication.name}</Text>
       <Text style={styles.strength}>{medication.strength}</Text>
-      <Text style={styles.count}>Current Count: {medication.current_count}</Text>
-      <Text style={styles.count}>Initial Count: {medication.initial_count}</Text>
+      <Text style={styles.count}>{t('current_count')}{medication.current_count}</Text>
+      <Text style={styles.count}>{t('initial_count')}{medication.initial_count}</Text>
       
       <View style={styles.buttonContainer}>
-        <Button title="Edit" onPress={() => router.push(`/medications/edit/${id}`)} />
-        <Button title="Delete" onPress={handleDelete} color="red" />
+        <Button title={t('edit')} onPress={() => router.push(`/medications/edit/${id}`)} />
+        <Button title={t('delete')} onPress={handleDelete} color="red" />
       </View>
     </View>
   );

@@ -6,11 +6,11 @@ import { useDatabase } from '@/src/hooks/useDatabase';
 import { ProfileRepository } from '@/src/database/repositories/ProfileRepository';
 
 export default function AppIndex() {
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const [profilesExist, setProfilesExist] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (db) {
+    if (!isDbLoading && db) {
       const checkProfiles = async () => {
         const profileRepo = new ProfileRepository(db);
         const profiles = await profileRepo.findAll();
@@ -18,9 +18,9 @@ export default function AppIndex() {
       };
       checkProfiles();
     }
-  }, [db]);
+  }, [db, isDbLoading]);
 
-  if (profilesExist === null) {
+  if (isDbLoading || profilesExist === null) {
     return <ActivityIndicator />;
   }
 

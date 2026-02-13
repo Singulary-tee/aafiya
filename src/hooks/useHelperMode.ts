@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDatabase } from './useDatabase';
 import { HelperPairingRepository, HelperPairing } from '../database/repositories/HelperPairingRepository';
 import { ProfileRepository } from '../database/repositories/ProfileRepository';
@@ -12,16 +12,17 @@ import { logger } from '../utils/logger';
 const SECURE_KEY_PREFIX = 'secure_channel_key_';
 
 export function useHelperMode(profileId: string) {
-    const db = useDatabase();
+    const { db, isLoading } = useDatabase();
     const [pairing, setPairing] = useState<HelperPairing | null>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [isPaired, setIsPaired] = useState<boolean>(false);
 
+    const pairingRepo = useMemo(() => db ? new HelperPairingRepository(db) : null, [db]);
+    const profileRepo = useMemo(() => db ? new ProfileRepository(db) : null, [db]);
+
     useEffect(() => {
         const loadPairing = async () => {
-            if (db && profileId) {
-                const pairingRepo = new HelperPairingRepository(db);
-                const profileRepo = new ProfileRepository(db);
+            if (!isLoading && db && profileId && pairingRepo && profileRepo) {
                 const manager = new HelperConnectionManager(pairingRepo, profileRepo);
 
                 const existingPairings = await manager.findActivePairings(profileId);
@@ -33,15 +34,13 @@ export function useHelperMode(profileId: string) {
             }
         };
         loadPairing();
-    }, [db, profileId]);
+    }, [db, profileId, isLoading, pairingRepo, profileRepo]);
 
     const generatePairingData = useCallback(async () => {
-        if (!db || !profileId) return;
+        if (isLoading || !db || !profileId || !pairingRepo || !profileRepo) return;
 
         try {
             logger.log('Generating new pairing data for QR code.');
-            const pairingRepo = new HelperPairingRepository(db);
-            const profileRepo = new ProfileRepository(db);
             const manager = new HelperConnectionManager(pairingRepo, profileRepo);
             const secureChannel = new SecureChannel();
 
@@ -58,10 +57,10 @@ export function useHelperMode(profileId: string) {
         } catch (error) {
             logger.error('Failed to generate pairing data:', error);
         }
-    }, [db, profileId]);
+    }, [db, profileId, isLoading, pairingRepo, profileRepo]);
 
     const pairWithPrimary = useCallback(async (qrCodeData: string) => {
-        if (!db) return;
+        if (isLoading || !db || !pairingRepo || !profileRepo) return;
 
         try {
             logger.log('Attempting to pair with primary user from QR code data.');
@@ -71,13 +70,11 @@ export function useHelperMode(profileId: string) {
                 throw new Error('Invalid QR code data.');
             }
 
-            const profileRepo = new ProfileRepository(db);
             const primaryUser = await profileRepo.findById(primaryProfileId);
             if (!primaryUser) {
                 throw new Error("Primary user not found.");
             }
 
-            const pairingRepo = new HelperPairingRepository(db);
             const manager = new HelperConnectionManager(pairingRepo, profileRepo);
 
             const storageKey = `${SECURE_KEY_PREFIX}${pairingCode}`;
@@ -94,15 +91,13 @@ export function useHelperMode(profileId: string) {
         } catch (error) {
             logger.error('Failed to pair with primary user:', error);
         }
-    }, [db]);
+    }, [db, isLoading, pairingRepo, profileRepo]);
 
     const unpair = useCallback(async () => {
-        if (!db || !pairing) return;
+        if (isLoading || !db || !pairing || !pairingRepo || !profileRepo) return;
 
         try {
             logger.log(`Unpairing from pairing ID: ${pairing.id}`);
-            const pairingRepo = new HelperPairingRepository(db);
-            const profileRepo = new ProfileRepository(db);
             const manager = new HelperConnectionManager(pairingRepo, profileRepo);
             const secureChannel = new SecureChannel();
 
@@ -116,7 +111,7 @@ export function useHelperMode(profileId: string) {
         } catch (error) {
             logger.error('Failed to unpair:', error);
         }
-    }, [db, pairing]);
+    }, [db, pairing, isLoading, pairingRepo, profileRepo]);
 
     return { isPaired, qrCode, pairing, generatePairingData, pairWithPrimary, unpair };
 }

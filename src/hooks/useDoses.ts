@@ -1,17 +1,21 @@
 import { useDatabase } from "./useDatabase";
 import { DoseLogRepository } from "../database/repositories/DoseLogRepository";
 import { DoseLog } from "../database/models/DoseLog";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 /**
  * useDoses
  * A hook for managing doses.
  */
 export function useDoses(medicationId: string) {
-    const db = useDatabase();
+    const { db, isLoading } = useDatabase();
     const [doses, setDoses] = useState<DoseLog[]>([]);
 
-    const doseLogRepository = db ? new DoseLogRepository(db) : null;
+    const doseLogRepository = useMemo(() => {
+        if (db) {
+            return new DoseLogRepository(db);
+        }
+    }, [db]);
 
     const loadDoses = useCallback(async () => {
         if (doseLogRepository) {
@@ -21,8 +25,10 @@ export function useDoses(medicationId: string) {
     }, [doseLogRepository, medicationId]);
 
     useEffect(() => {
-        loadDoses();
-    }, [loadDoses]);
+        if (!isLoading) {
+            loadDoses();
+        }
+    }, [isLoading, loadDoses]);
 
     const logDose = async (dose: Omit<DoseLog, 'id'>) => {
         if (doseLogRepository) {

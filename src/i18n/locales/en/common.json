@@ -15,5 +15,16 @@
   "warning": "Warning",
   "confirm": "Confirm",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "buttons": {
+    "take": "Take",
+    "skip": "Skip"
+  },
+  "status": {
+    "taken": "Taken",
+    "missed": "Missed",
+    "skipped": "Skipped",
+    "pending": "Pending"
+  },
+  "add_profile": "Add Profile"
 }

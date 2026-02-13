@@ -6,5 +6,10 @@
   "medications_today": "Medications Today",
   "no_medications": "No medications today",
   "view_all": "View All",
-  "recent_activity": "Recent Activity"
+  "recent_activity": "Recent Activity",
+  "automatically_logged_as_missed": "Automatically logged as missed",
+  "todays_doses": "Today's Doses",
+  "healthStatus": "Health Status",
+  "storage_levels": "Storage Levels",
+  "add_new_medication": "Add New Medication"
 }

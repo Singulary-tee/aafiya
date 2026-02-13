@@ -10,13 +10,13 @@ import { COLORS } from '@/src/constants/colors';
 
 export default function StatisticsScreen() {
   const { profileId } = useLocalSearchParams();
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const [logs, setLogs] = useState<DoseLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ adherence: 0, streak: 0, missedDoses: 0 });
 
   useEffect(() => {
-    if (db && profileId) {
+    if (!isDbLoading && db && profileId) {
       const doseLogRepo = new DoseLogRepository(db);
       const endDate = new Date();
       const startDate = new Date();
@@ -77,9 +77,9 @@ export default function StatisticsScreen() {
         setIsLoading(false);
       });
     }
-  }, [db, profileId]);
+  }, [db, profileId, isDbLoading]);
 
-  if (isLoading) {
+  if (isDbLoading || isLoading) {
     return <ActivityIndicator style={styles.centered} />;
   }
 

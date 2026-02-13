@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { COLORS } from '@/src/constants/colors';
 import { SPACING } from '@/src/constants/spacing';
 import Card from '@/src/components/common/Card';
@@ -11,22 +12,24 @@ interface HelperStatusCardProps {
   status: HelperStatus;
 }
 
-const statusConfig = {
-  unpaired: {
-    text: 'Not Paired with a Helper',
-    color: COLORS.textSecondary,
-  },
-  pending: {
-    text: 'Pairing Request Pending',
-    color: COLORS.attention,
-  },
-  paired: {
-    text: 'Paired with a Helper',
-    color: COLORS.healthy,
-  },
-};
-
 export function HelperStatusCard({ status }: HelperStatusCardProps) {
+  const { t } = useTranslation('helper');
+
+  const statusConfig = {
+    unpaired: {
+      text: t('status_unpaired'),
+      color: COLORS.textSecondary,
+    },
+    pending: {
+      text: t('status_pending'),
+      color: COLORS.attention,
+    },
+    paired: {
+      text: t('status_paired'),
+      color: COLORS.healthy,
+    },
+  };
+
   const config = statusConfig[status];
 
   return (

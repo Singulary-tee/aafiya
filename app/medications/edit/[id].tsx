@@ -6,6 +6,7 @@ import { useDatabase } from '@/src/hooks/useDatabase';
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
 import { Medication } from '@/src/database/models/Medication';
 import { COLORS } from '@/src/constants/colors';
+import { useTranslation } from 'react-i18next';
 
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams();
@@ -13,11 +14,12 @@ export default function EditMedicationScreen() {
   const [name, setName] = useState('');
   const [strength, setStrength] = useState('');
   const [currentCount, setCurrentCount] = useState('');
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
+  const { t } = useTranslation(['medications']);
 
   useEffect(() => {
-    if (db && id) {
+    if (!isDbLoading && db && id) {
       const medicationRepo = new MedicationRepository(db);
       medicationRepo.findById(id as string).then((med) => {
         if (med) {
@@ -28,7 +30,7 @@ export default function EditMedicationScreen() {
         }
       });
     }
-  }, [db, id]);
+  }, [db, id, isDbLoading]);
 
   const handleUpdate = async () => {
     if (db && medication) {
@@ -42,32 +44,32 @@ export default function EditMedicationScreen() {
     }
   };
 
-  if (!medication) {
+  if (isDbLoading || !medication) {
     return <ActivityIndicator style={styles.centered} />;
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Medication Name</Text>
+      <Text style={styles.label}>{t('medication_name_label')}</Text>
       <TextInput
         style={styles.input}
         value={name}
         onChangeText={setName}
       />
-      <Text style={styles.label}>Strength</Text>
+      <Text style={styles.label}>{t('strength_label')}</Text>
       <TextInput
         style={styles.input}
         value={strength}
         onChangeText={setStrength}
       />
-      <Text style={styles.label}>Current Count</Text>
+      <Text style={styles.label}>{t('current_count_label')}</Text>
       <TextInput
         style={styles.input}
         value={currentCount}
         onChangeText={setCurrentCount}
         keyboardType="numeric"
       />
-      <Button title="Update Medication" onPress={handleUpdate} />
+      <Button title={t('update_medication_button')} onPress={handleUpdate} disabled={isDbLoading} />
     </View>
   );
 }

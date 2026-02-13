@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ProfileAvatar } from './ProfileAvatar';
 import Button from '../common/Button';
 import { SPACING } from '@/src/constants/spacing';
@@ -20,6 +21,8 @@ interface ProfileSelectorProps {
 }
 
 export function ProfileSelector({ profiles, selectedProfileId, onSelectProfile, onAddProfile }: ProfileSelectorProps) {
+  const { t } = useTranslation('common');
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -33,10 +36,11 @@ export function ProfileSelector({ profiles, selectedProfileId, onSelectProfile, 
               name={item.name}
               color={item.avatarColor}
               size="medium"
+              onPress={() => onSelectProfile(item.id)}
             />
           </View>
         )}
-        ListFooterComponent={<Button title="Add Profile" onPress={onAddProfile} />}
+        ListFooterComponent={<Button title={t('add_profile')} onPress={onAddProfile} />}
       />
     </View>
   );

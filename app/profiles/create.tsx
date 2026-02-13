@@ -10,7 +10,7 @@ import { COLORS } from '@/src/constants/colors';
 export default function CreateProfileScreen() {
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS.primary);
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
   const { switchProfile } = useProfile();
 
@@ -50,7 +50,7 @@ export default function CreateProfileScreen() {
           />
         ))}
       </View>
-      <Button title="Create Profile" onPress={handleCreateProfile} />
+      <Button title="Create Profile" onPress={handleCreateProfile} disabled={isDbLoading} />
     </View>
   );
 }

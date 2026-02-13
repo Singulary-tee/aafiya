@@ -10,5 +10,20 @@
   "search_medications": "Search Medications",
   "mark_taken": "Marked as Taken",
   "mark_missed": "Marked as Missed",
-  "mark_skipped": "Marked as Skipped"
+  "mark_skipped": "Marked as Skipped",
+  "current_count": "Current Count: ",
+  "initial_count": "Initial Count: ",
+  "edit": "Edit",
+  "delete": "Delete",
+  "add_medication_title": "Add Medication",
+  "medication_name_placeholder": "Medication Name",
+  "strength_placeholder": "Strength (e.g., 500mg)",
+  "initial_count_placeholder": "Initial Count",
+  "time_placeholder": "Time (e.g., 09:00)",
+  "medication_name_label": "Medication Name",
+  "strength_label": "Strength",
+  "current_count_label": "Current Count",
+  "update_medication_button": "Update Medication",
+  "search_placeholder": "Search...",
+  "search_medications_placeholder": "Search Medications..."
 }

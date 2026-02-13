@@ -12,11 +12,11 @@ export default function EditProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const db = useDatabase();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
 
   useEffect(() => {
-    if (db && id) {
+    if (!isDbLoading && db && id) {
       const profileRepo = new ProfileRepository(db);
       profileRepo.findById(id as string).then((p) => {
         if (p) {
@@ -26,7 +26,7 @@ export default function EditProfileScreen() {
         }
       });
     }
-  }, [db, id]);
+  }, [db, id, isDbLoading]);
 
   const handleUpdate = async () => {
     if (db && profile) {
@@ -39,7 +39,7 @@ export default function EditProfileScreen() {
     }
   };
 
-  if (!profile) {
+  if (isDbLoading || !profile) {
     return <ActivityIndicator style={styles.centered} />;
   }
 
@@ -65,7 +65,7 @@ export default function EditProfileScreen() {
           />
         ))}
       </View>
-      <Button title="Update Profile" onPress={handleUpdate} />
+      <Button title="Update Profile" onPress={handleUpdate} disabled={isDbLoading} />
     </View>
   );
 }

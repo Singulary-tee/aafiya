@@ -6,7 +6,7 @@ export interface DoseLog {
     /** The unique identifier for the dose log. */
     id: string;
 
-    /** The ID of the profile taking the dose. */
+    /** The ID of the profile associated with this dose. */
     profile_id: string;
 
     /** The ID of the medication being taken. */
@@ -29,7 +29,4 @@ export interface DoseLog {
 
     /** The timestamp when this log was created. */
     created_at: number;
-
-    /** The timestamp when this log was last updated. */
-    updated_at: number;
 }
