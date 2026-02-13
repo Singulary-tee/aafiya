@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import * as SQLite from 'expo-sqlite';
+import { openDatabase } from "../database";
 
 /**
  * useDatabase
- * A hook to get the database connection.
+ * A hook to get the initialized database connection.
+ * It ensures that migrations are applied.
  */
 export function useDatabase() {
     const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
@@ -11,9 +13,13 @@ export function useDatabase() {
     useEffect(() => {
         let isMounted = true;
         async function setupDatabase() {
-            const db = await SQLite.openDatabaseAsync('medication_tracker.db');
-            if (isMounted) {
-                setDb(db);
+            try {
+                const dbInstance = await openDatabase();
+                if (isMounted) {
+                    setDb(dbInstance);
+                }
+            } catch (error) {
+                console.error("Failed to initialize database:", error);
             }
         }
         setupDatabase();
