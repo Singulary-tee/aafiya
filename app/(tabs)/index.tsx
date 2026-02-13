@@ -43,7 +43,7 @@ export default function HomeScreen() {
   }, [refreshHealthScore]);
 
   const loadDoses = useCallback(async () => {
-    if (!db || !medications.length) return;
+    if (!db || !medications.length || !activeProfile) return;
 
     const scheduleRepo = new ScheduleRepository(db);
     const doseLogRepo = new DoseLogRepository(db);
@@ -69,15 +69,18 @@ export default function HomeScreen() {
               status = existingLog.status as Dose['status'];
             } else if (new Date() > scheduledDateTime) {
               status = 'missed';
-              await doseLogRepo.create({
-                medication_id: med.id,
-                schedule_id: schedule.id,
-                scheduled_time: scheduledDateTime.getTime(),
-                status: 'missed',
-                actual_time: null,
-                notes: 'Automatically logged as missed',
-              } as DoseLog);
-              needsScoreRefresh = true;
+              if (activeProfile) { // Added check for activeProfile
+                await doseLogRepo.create({
+                  profile_id: activeProfile.id,
+                  medication_id: med.id,
+                  schedule_id: schedule.id,
+                  scheduled_time: scheduledDateTime.getTime(),
+                  status: 'missed',
+                  actual_time: null,
+                  notes: 'Automatically logged as missed',
+                });
+                needsScoreRefresh = true;
+              }
             }
 
             allDoses.push({
@@ -96,30 +99,30 @@ export default function HomeScreen() {
     if (needsScoreRefresh) {
       refreshScore();
     }
-  }, [medications, db, refreshScore]);
+  }, [medications, db, refreshScore, activeProfile]);
 
   useEffect(() => {
     loadDoses();
   }, [loadDoses]);
 
   const handleLogDose = async (dose: Dose, status: 'taken' | 'skipped') => {
-    if (!db) return;
+    if (!db || !activeProfile) return;
     const doseLogRepo = new DoseLogRepository(db);
 
     const today = new Date();
     const [hour, minute] = dose.scheduledTime.split(':').map(Number);
     const scheduledDateTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
 
-    const newLog: Omit<DoseLog, 'id' | 'created_at'> = {
+    await doseLogRepo.create({
+      profile_id: activeProfile.id,
       medication_id: dose.medication.id,
       schedule_id: dose.schedule_id,
       scheduled_time: scheduledDateTime.getTime(),
       actual_time: new Date().getTime(),
       status: status,
       notes: null,
-    };
+    });
 
-    await doseLogRepo.create(newLog as DoseLog);
     await loadDoses(); // Refresh doses
     await refreshScore(); // Refresh health score
   };

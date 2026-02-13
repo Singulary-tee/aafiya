@@ -5,13 +5,13 @@ import { DoseLog } from '../models/DoseLog';
 /**
  * Data required to create a new dose log entry.
  */
-export type DoseLogData = Omit<DoseLog, 'id' | 'created_at'>;
+export type DoseLogData = Omit<DoseLog, 'id' | 'created_at' | 'updated_at'>;
 
 /**
  * Data that can be updated on an existing dose log.
  */
-export type DoseLogUpdate = Partial<Omit<DoseLog, 'id' | 'medication_id' | 'schedule_id' | 'created_at'>>;
-
+export type DoseLogUpdate = Partial<Omit<DoseLog, 'id' | 'medication_id' | 'schedule_id' | 'created_at'>
+>;
 
 export class DoseLogRepository {
     private db: SQLiteDatabase;
@@ -27,8 +27,9 @@ export class DoseLogRepository {
      */
     async create(data: DoseLogData): Promise<DoseLog> {
         const now = Date.now();
-        const newLog = {
+        const newLog: DoseLog = {
             id: generateUUID(),
+            profile_id: data.profile_id,
             medication_id: data.medication_id,
             schedule_id: data.schedule_id ?? null,
             scheduled_time: data.scheduled_time,
@@ -36,14 +37,15 @@ export class DoseLogRepository {
             status: data.status,
             notes: data.notes ?? null,
             created_at: now,
+            updated_at: now,
         };
 
         await this.db.runAsync(
-            `INSERT INTO dose_log (id, medication_id, schedule_id, scheduled_time, actual_time, status, notes, created_at) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
-            [newLog.id, newLog.medication_id, newLog.schedule_id, newLog.scheduled_time, newLog.actual_time, newLog.status, newLog.notes, newLog.created_at]
+            `INSERT INTO dose_log (id, profile_id, medication_id, schedule_id, scheduled_time, actual_time, status, notes, created_at, updated_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [newLog.id, newLog.profile_id, newLog.medication_id, newLog.schedule_id, newLog.scheduled_time, newLog.actual_time, newLog.status, newLog.notes, newLog.created_at, newLog.updated_at]
         );
-        return newLog as DoseLog;
+        return newLog;
     }
     
     /**
@@ -134,9 +136,11 @@ export class DoseLogRepository {
             return value === undefined ? null : value;
         });
 
+        const now = Date.now();
+
         await this.db.runAsync(
-            `UPDATE dose_log SET ${setClause} WHERE id = ?`,
-            [...values, id]
+            `UPDATE dose_log SET ${setClause}, updated_at = ? WHERE id = ?`,
+            [...values, now, id]
         );
 
         const updatedLog = await this.findById(id);
@@ -144,5 +148,13 @@ export class DoseLogRepository {
             throw new Error('DoseLog not found after update');
         }
         return updatedLog;
+    }
+    
+    /**
+     * Deletes a dose log by its ID.
+     * @param id The ID of the dose log to delete.
+     */
+    async delete(id: string): Promise<void> {
+        await this.db.runAsync('DELETE FROM dose_log WHERE id = ?', [id]);
     }
 }

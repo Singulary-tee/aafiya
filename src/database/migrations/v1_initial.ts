@@ -69,9 +69,9 @@ export async function initializeDatabaseSchema(db: SQLite.SQLiteDatabase): Promi
     CREATE INDEX idx_schedules_active ON schedules(is_active);
   `);
 
-  // Create dose_logs table
+  // Create dose_log table
   await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS dose_logs (
+    CREATE TABLE IF NOT EXISTS dose_log (
       id TEXT PRIMARY KEY,
       schedule_id TEXT NOT NULL,
       medication_id TEXT NOT NULL,
@@ -87,11 +87,11 @@ export async function initializeDatabaseSchema(db: SQLite.SQLiteDatabase): Promi
       FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE CASCADE,
       FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
     );
-    CREATE INDEX idx_dose_logs_schedule ON dose_logs(schedule_id);
-    CREATE INDEX idx_dose_logs_medication ON dose_logs(medication_id);
-    CREATE INDEX idx_dose_logs_profile ON dose_logs(profile_id);
-    CREATE INDEX idx_dose_logs_status ON dose_logs(status);
-    CREATE INDEX idx_dose_logs_time ON dose_logs(scheduled_time);
+    CREATE INDEX idx_dose_log_schedule ON dose_log(schedule_id);
+    CREATE INDEX idx_dose_log_medication ON dose_log(medication_id);
+    CREATE INDEX idx_dose_log_profile ON dose_log(profile_id);
+    CREATE INDEX idx_dose_log_status ON dose_log(status);
+    CREATE INDEX idx_dose_log_time ON dose_log(scheduled_time);
   `);
 
   // Create health_metrics table
@@ -132,9 +132,9 @@ export async function initializeDatabaseSchema(db: SQLite.SQLiteDatabase): Promi
     CREATE INDEX idx_api_cache_expires ON api_cache(expires_at);
   `);
 
-  // Create helper_pairings table
+  // Create helper_pairing table
   await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS helper_pairings (
+    CREATE TABLE IF NOT EXISTS helper_pairing (
       id TEXT PRIMARY KEY,
       profile_id TEXT NOT NULL,
       pairing_key TEXT NOT NULL UNIQUE,
@@ -145,7 +145,7 @@ export async function initializeDatabaseSchema(db: SQLite.SQLiteDatabase): Promi
       updated_at INTEGER NOT NULL,
       FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
     );
-    CREATE INDEX idx_helper_pairings_profile ON helper_pairings(profile_id);
-    CREATE INDEX idx_helper_pairings_key ON helper_pairings(pairing_key);
+    CREATE INDEX idx_helper_pairing_profile ON helper_pairing(profile_id);
+    CREATE INDEX idx_helper_pairing_key ON helper_pairing(pairing_key);
   `);
 }

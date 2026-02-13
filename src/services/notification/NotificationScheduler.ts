@@ -1,112 +1,127 @@
-
 import * as Notifications from 'expo-notifications';
-import { Schedule } from '../../database/models/Schedule';
+import { add, set } from 'date-fns';
 import { Medication } from '../../database/models/Medication';
+import { Schedule } from '../../database/models/Schedule';
 import { DoseLogRepository } from '../../database/repositories/DoseLogRepository';
 import { logger } from '../../utils/logger';
-import { DoseLog } from '../../database/models/DoseLog';
-import { addDays, setHours, setMinutes, setSeconds } from 'date-fns';
+import { ProfileRepository } from '../../database/repositories/ProfileRepository';
+import { MedicationRepository } from '../../database/repositories/MedicationRepository';
+import { ScheduleRepository } from '../../database/repositories/ScheduleRepository';
 
-const NOTIFICATION_CATEGORY_ID = 'medication-reminder';
+const DOSE_REMINDER_CATEGORY_ID = 'DOSE_REMINDER';
 
 /**
- * Manages the scheduling and cancellation of local notifications for medication reminders.
+ * NotificationScheduler
+ * Schedules reminders for medication doses.
  */
 export class NotificationScheduler {
     private doseLogRepository: DoseLogRepository;
+    private profileRepository: ProfileRepository;
+    private medicationRepository: MedicationRepository;
+    private scheduleRepository: ScheduleRepository;
 
-    constructor(doseLogRepository: DoseLogRepository) {
+    constructor(
+        doseLogRepository: DoseLogRepository,
+        profileRepository: ProfileRepository,
+        medicationRepository: MedicationRepository,
+        scheduleRepository: ScheduleRepository
+    ) {
         this.doseLogRepository = doseLogRepository;
+        this.profileRepository = profileRepository;
+        this.medicationRepository = medicationRepository;
+        this.scheduleRepository = scheduleRepository;
     }
 
     /**
-     * Schedules notifications for a given medication according to its schedule.
-     * It also creates corresponding dose logs.
-     * @param medication The medication to schedule notifications for.
-     * @param schedule The schedule to base the notifications on.
+     * Configures the notification categories for dose reminders.
+     * This should be called once when the app starts.
      */
-    async scheduleNotifications(medication: Medication, schedule: Schedule): Promise<void> {
-        const now = new Date();
-        // Schedule for the next 30 days
-        for (let day = 0; day < 30; day++) {
-            const scheduleDate = addDays(now, day);
-            const dayOfWeek = scheduleDate.getDay(); // Sunday = 0, Monday = 1, etc.
+    static async configureNotificationCategories(): Promise<void> {
+        await Notifications.setNotificationCategoryAsync(DOSE_REMINDER_CATEGORY_ID, [
+            { identifier: 'TAKE', buttonTitle: 'Take', options: { opensAppToForeground: true } },
+            { identifier: 'SKIP', buttonTitle: 'Skip', options: { opensAppToForeground: true } },
+        ]);
+    }
 
-            // If the schedule is for specific days, check if the current day is one of them
-            if (schedule.days_of_week && !schedule.days_of_week.includes(dayOfWeek)) {
-                continue;
-            }
+    /**
+     * Schedules notifications for a given medication and its schedules.
+     * It will clear any existing notifications for this medication to avoid duplicates.
+     * @param medication The medication to schedule notifications for.
+     * @param schedules A list of schedules for the medication.
+     * @param profileId The ID of the profile the medication belongs to.
+     */
+    async schedule(medication: Medication, schedules: Schedule[], profileId: string): Promise<void> {
+        await this.cancel(medication.id);
 
+        for (const schedule of schedules) {
             for (const time of schedule.times) {
                 const [hour, minute] = time.split(':').map(Number);
-                let notificationDate = setSeconds(setMinutes(setHours(scheduleDate, hour), minute), 0);
+                const now = new Date();
+                let nextDoseTime = set(now, { hours: hour, minutes: minute, seconds: 0, milliseconds: 0 });
 
-                if (notificationDate < now) {
-                    continue; // Do not schedule for past times
+                if (nextDoseTime < now) {
+                    nextDoseTime = add(nextDoseTime, { days: 1 });
                 }
 
-                // Create a dose log for this scheduled time if one doesn't already exist
-                let doseLog = await this.doseLogRepository.findByMedicationAndScheduledTime(medication.id, notificationDate.getTime());
-                if (!doseLog) {
-                    doseLog = await this.doseLogRepository.create({
-                        medication_id: medication.id,
-                        schedule_id: schedule.id,
-                        scheduled_time: notificationDate.getTime(),
-                        status: 'skipped', // Default status
-                        actual_time: null,
-                        notes: null,
-                    });
-                }
+                const doseLog = await this.doseLogRepository.create({
+                    medication_id: medication.id,
+                    schedule_id: schedule.id,
+                    profile_id: profileId, 
+                    scheduled_time: nextDoseTime.getTime(),
+                    status: 'skipped',
+                    actual_time: null,
+                    notes: null,
+                });
 
-                const notificationId = await this.scheduleSingleNotification(medication, notificationDate, doseLog);
-                logger.log(`Scheduled notification ${notificationId} for ${medication.name} at ${notificationDate}.`);
+                const seconds = (nextDoseTime.getTime() - Date.now()) / 1000;
+
+                await Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: `Time for your ${medication.name}`,
+                        body: `It's time to take your dose of ${medication.dosage_form} ${medication.strength}.`,
+                        categoryIdentifier: DOSE_REMINDER_CATEGORY_ID,
+                        data: { doseLogId: doseLog.id },
+                        sound: true,
+                    },
+                    trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: seconds > 0 ? seconds : 1, repeats: false },
+                });
+
+                logger.log(`Scheduled notification for ${medication.name} at ${nextDoseTime}`);
             }
         }
     }
 
     /**
-     * Schedules a single notification.
-     * @param medication The medication for the notification.
-     * @param date The date and time for the notification.
-     * @param doseLog The corresponding dose log.
-     * @returns The ID of the scheduled notification.
+     * Cancels all scheduled notifications for a specific medication.
+     * @param medicationId The ID of the medication to cancel notifications for.
      */
-    private async scheduleSingleNotification(medication: Medication, date: Date, doseLog: DoseLog): Promise<string> {
-        return await Notifications.scheduleNotificationAsync({
-            content: {
-                title: 'Time for your medication!',
-                body: `Don't forget to take ${medication.name}.`,
-                sound: 'default',
-                data: {
-                    medicationId: medication.id,
-                    doseLogId: doseLog.id,
-                },
-                categoryIdentifier: NOTIFICATION_CATEGORY_ID,
-            },
-            trigger: {
-                type: Notifications.SchedulableTriggerInputTypes.DATE, 
-                date: date,
+    async cancel(medicationId: string): Promise<void> {
+        const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+        for (const notification of scheduled) {
+            const doseLogId = notification.content.data?.doseLogId;
+            if (doseLogId) {
+                const doseLog = await this.doseLogRepository.findById(doseLogId as string);
+                if (doseLog?.medication_id === medicationId) {
+                    await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+                }
             }
-        });
+        }
     }
 
     /**
-     * Cancels all scheduled notifications for a given medication.
-     * @param medicationId The ID of the medication.
+     * Reschedules all notifications for all active medications and profiles.
+     * This is useful after a system reboot or app update.
      */
-    async cancelNotifications(medicationId: string): Promise<void> {
-        const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
-        let cancelCount = 0;
-
-        for (const notification of scheduledNotifications) {
-            if (notification.content.data?.medicationId === medicationId) {
-                await Notifications.cancelScheduledNotificationAsync(notification.identifier);
-                cancelCount++;
+    async rescheduleAll(): Promise<void> {
+        logger.log('Rescheduling all notifications...');
+        const profiles = await this.profileRepository.findAll();
+        for (const profile of profiles) {
+            const medications = await this.medicationRepository.findByProfileId(profile.id);
+            const activeMedications = medications.filter(med => med.is_active);
+            for (const medication of activeMedications) {
+                const schedules = await this.scheduleRepository.findByMedicationId(medication.id);
+                await this.schedule(medication, schedules, profile.id);
             }
-        }
-
-        if (cancelCount > 0) {
-            logger.log(`Cancelled ${cancelCount} notifications for medication ID ${medicationId}.`);
         }
     }
 }

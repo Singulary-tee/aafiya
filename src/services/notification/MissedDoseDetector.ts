@@ -44,14 +44,31 @@ export class MissedDoseDetector {
 
             logger.log(`Found ${missedDoses.length} missed doses. Updating their status...`);
 
-            // Use Promise.all to update all missed doses concurrently.
-            await Promise.all(
-                missedDoses.map((dose) =>
-                    this.doseLogRepository.update(dose.id, { status: 'missed' })
-                )
+            // Use Promise.allSettled to handle potential errors for individual dose updates.
+            const results = await Promise.allSettled(
+                missedDoses.map(async (dose) => {
+                    try {
+                        await this.doseLogRepository.update(dose.id, { status: 'missed' });
+                    } catch (error) {
+                        logger.error(`Failed to update dose ${dose.id} to 'missed'. Deleting orphaned dose log.`, error);
+                        // If updating fails (e.g., foreign key constraint), delete the orphaned log.
+                        await this.doseLogRepository.delete(dose.id);
+                        // Re-throw to mark the promise as rejected
+                        throw error;
+                    }
+                })
             );
 
-            logger.log(`Successfully updated ${missedDoses.length} doses to 'missed'.`);
+            const successfulUpdates = results.filter(result => result.status === 'fulfilled').length;
+            const failedUpdates = results.length - successfulUpdates;
+
+            if (successfulUpdates > 0) {
+                logger.log(`Successfully updated ${successfulUpdates} doses to 'missed'.`);
+            }
+            if (failedUpdates > 0) {
+                logger.warn(`Failed to update and subsequently deleted ${failedUpdates} orphaned dose logs.`);
+            }
+
         } catch (error) {
             logger.error('Error while detecting missed doses:', error);
             // Re-throwing the error so the caller (e.g., a background job runner) knows the task failed.
