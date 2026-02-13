@@ -16,7 +16,7 @@ export function useProfile() {
 
     const loadProfiles = useCallback(async () => {
         if (profileRepository) {
-            const allProfiles = await profileRepository.getAll();
+            const allProfiles = await profileRepository.findAll();
             setProfiles(allProfiles);
             if (allProfiles.length > 0 && !activeProfile) {
                 // Set the first profile as active by default

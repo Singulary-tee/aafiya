@@ -1,114 +1,127 @@
 
-import { Medication } from '@/database/models/Medication';
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Medication } from '../../database/models/Medication';
+import { COLORS } from '../../constants/colors';
+import { SPACING } from '../../constants/spacing';
+import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
+import Card from '../common/Card';
+import Button from '../common/Button';
+
+type DoseStatus = 'pending' | 'taken' | 'missed' | 'skipped';
 
 interface DoseCardProps {
   medication: Medication;
   scheduledTime: string;
-  status: 'pending' | 'taken' | 'missed' | 'skipped';
+  status: DoseStatus;
   onTake: () => void;
   onSkip: () => void;
 }
 
-const getStatusStyle = (status: DoseCardProps['status']) => {
-  switch (status) {
-    case 'taken':
-      return { barColor: '#4CAF50', contentStyle: { opacity: 0.5 } };
-    case 'missed':
-      return { barColor: '#F44336', contentStyle: {} };
-    case 'skipped':
-      return { barColor: '#FF9800', contentStyle: { opacity: 0.7 } };
-    case 'pending':
-    default:
-      return { barColor: '#2196F3', contentStyle: {} };
-  }
-};
+const DoseCard: React.FC<DoseCardProps> = ({ medication, scheduledTime, status, onTake, onSkip }) => {
+  const { t } = useTranslation('common');
 
-export function DoseCard({ medication, scheduledTime, status, onTake, onSkip }: DoseCardProps) {
-  const { barColor, contentStyle } = getStatusStyle(status);
+  const getStatusStyle = () => {
+    switch (status) {
+      case 'taken':
+        return { bar: styles.takenBar, text: styles.takenText };
+      case 'missed':
+        return { bar: styles.missedBar, text: styles.missedText };
+      case 'skipped':
+        return { bar: styles.skippedBar, text: styles.skippedText };
+      default:
+        return { bar: {}, text: {} };
+    }
+  };
+
+  const { bar, text } = getStatusStyle();
 
   return (
-    <ThemedView style={[styles.card, contentStyle]}>
-      <View style={[styles.statusIndicator, { backgroundColor: barColor }]} />
-      <View style={styles.contentContainer}>
-        <ThemedText style={styles.medicationName}>{`${medication.name} ${medication.strength}`}</ThemedText>
-        <ThemedText style={styles.scheduledTime}>{scheduledTime}</ThemedText>
-      </View>
-      {status === 'pending' && (
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity onPress={onTake} style={styles.actionButton}>
-            <ThemedText style={styles.actionTextTake}>Take</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onSkip} style={styles.actionButton}>
-            <ThemedText style={styles.actionTextSkip}>Skip</ThemedText>
-          </TouchableOpacity>
+    <Card style={styles.card}>
+      <View style={[styles.statusBar, bar]} />
+      <View style={styles.content}>
+        <View style={styles.details}>
+          <Text style={styles.time}>{scheduledTime}</Text>
+          <Text style={styles.name}>{medication.name}</Text>
+          <Text style={styles.dosage}>{medication.strength}</Text>
         </View>
-      )}
-      {status !== 'pending' && (
-         <ThemedText style={styles.statusText}>{status.charAt(0).toUpperCase() + status.slice(1)}</ThemedText>
-      )}
-    </ThemedView>
+        {status === 'pending' ? (
+          <View style={styles.actions}>
+            <Button title="buttons.take" onPress={onTake} variant="primary" style={styles.button} />
+            <Button title="buttons.skip" onPress={onSkip} variant="secondary" style={styles.button} />
+          </View>
+        ) : (
+          <Text style={[styles.statusText, text]}>{t(`status.${status}`)}</Text>
+        )}
+      </View>
+    </Card>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
-    height: 80,
-    borderRadius: 8,
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    // Elevation from blueprint
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    backgroundColor: '#FFFFFF', // Default background for ThemedView
+    padding: 0,
+    overflow: 'hidden',
+    marginBottom: SPACING.md,
   },
-  statusIndicator: {
+  statusBar: {
     width: 6,
-    height: '100%',
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
   },
-  contentContainer: {
+  content: {
     flex: 1,
-    paddingHorizontal: 16,
-  },
-  medicationName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scheduledTime: {
-    fontSize: 14,
-    color: '#757575',
-  },
-  actionsContainer: {
+    padding: SPACING.md,
     flexDirection: 'row',
-    paddingRight: 16,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  details: {
+    flex: 1,
   },
-  actionTextTake: {
-    color: '#4CAF50',
-    fontWeight: 'bold',
-    fontSize: 16,
+  time: {
+    fontSize: FONT_SIZES.body,
+    fontWeight: FONT_WEIGHTS.medium as any,
+    color: COLORS.textPrimary,
   },
-  actionTextSkip: {
-    color: '#FF9800',
-    fontWeight: 'bold',
-    fontSize: 16,
+  name: {
+    fontSize: FONT_SIZES.title,
+    fontWeight: FONT_WEIGHTS.bold as any,
+    color: COLORS.textPrimary,
+    marginVertical: SPACING.xs,
+  },
+  dosage: {
+    fontSize: FONT_SIZES.caption,
+    color: COLORS.textSecondary,
+  },
+  actions: {
+    flexDirection: 'row',
+  },
+  button: {
+    marginLeft: SPACING.sm,
   },
   statusText: {
-      paddingRight: 16,
-      fontSize: 16,
-      fontWeight: 'bold',
-      fontStyle: 'italic'
-  }
+    fontSize: FONT_SIZES.body,
+    fontWeight: FONT_WEIGHTS.bold as any,
+  },
+  takenBar: {
+    backgroundColor: COLORS.healthy,
+  },
+  takenText: {
+    color: COLORS.healthy,
+  },
+  missedBar: {
+    backgroundColor: COLORS.critical,
+  },
+  missedText: {
+    color: COLORS.critical,
+  },
+  skippedBar: {
+    backgroundColor: COLORS.attention,
+  },
+  skippedText: {
+    color: COLORS.attention,
+  },
 });
+
+export default DoseCard;

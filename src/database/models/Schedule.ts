@@ -1,30 +1,14 @@
 /**
- * Schedule Model
- * Represents a dosing schedule for medications
+ * Represents a medication schedule in the database.
  */
-
-export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Sunday to Saturday
-
 export interface Schedule {
-  id: string; // UUID v4
-  medication_id: string; // Foreign key to Medication
-  times: string; // JSON array of time strings (HH:mm)
-  days_of_week: string; // JSON array of DayOfWeek or null for daily
-  grace_period_minutes: number; // Default 30, configurable 0-120
-  is_active: number; // Boolean: 1=active, 0=disabled
-  created_at: number; // Unix timestamp
-  updated_at: number; // Unix timestamp
-}
-
-export interface ScheduleInput {
-  times: string[];
-  days_of_week?: DayOfWeek[] | null;
-  grace_period_minutes?: number;
-}
-
-export interface ScheduleUpdate {
-  times?: string[];
-  days_of_week?: DayOfWeek[] | null;
-  grace_period_minutes?: number;
-  is_active?: number;
+    id: string;
+    medication_id: string;
+    times: string[]; // Stored as JSON string in DB, but represented as array in the app
+    days_of_week: number[] | null; // Stored as JSON string in DB, but represented as array/null in the app
+    grace_period_minutes: number;
+    notification_sound: string | null;
+    is_active: number; // 1 for true, 0 for false
+    created_at: number;
+    updated_at: number;
 }

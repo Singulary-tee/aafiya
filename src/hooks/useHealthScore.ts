@@ -1,8 +1,8 @@
-import { useDatabase } from "./useDatabase";
-import { HealthScoreCalculator } from "../services/health/HealthScoreCalculator";
-import { DoseLogRepository } from "../database/repositories/DoseLogRepository";
-import { ProfileRepository } from "../database/repositories/ProfileRepository";
-import { useState, useEffect, useCallback } from "react";
+import { useDatabase } from './useDatabase';
+import { HealthScoreCalculatorService } from '../services/health/HealthScoreCalculator';
+import { DoseLogRepository } from '../database/repositories/DoseLogRepository';
+import { HealthMetricsRepository } from '../database/repositories/HealthMetricsRepository';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * useHealthScore
@@ -15,10 +15,10 @@ export function useHealthScore(profileId: string) {
     const calculateHealthScore = useCallback(async () => {
         if (db) {
             const doseLogRepository = new DoseLogRepository(db);
-            const profileRepository = new ProfileRepository(db);
-            const calculator = new HealthScoreCalculator(doseLogRepository, profileRepository);
-            const score = await calculator.calculate(profileId);
-            setHealthScore(score);
+            const healthMetricsRepository = new HealthMetricsRepository(db);
+            const calculator = new HealthScoreCalculatorService(doseLogRepository, healthMetricsRepository);
+            const metrics = await calculator.calculateAndSave(profileId);
+            setHealthScore(metrics.health_score);
         }
     }, [db, profileId]);
 

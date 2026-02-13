@@ -1,65 +1,70 @@
 
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import Svg, { Circle, Text as SvgText } from 'react-native-svg';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
+import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
+import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
 
 interface StorageCircleProps {
   daysRemaining: number;
   size: 'small' | 'medium';
-  onPress: () => void;
+  onPress?: () => void;
 }
 
-const getStorageStatus = (days: number): { color: string } => {
-  if (days >= 14) {
-    return { color: '#4CAF50' }; // Green
-  }
-  if (days >= 7) {
-    return { color: '#FFC107' }; // Yellow
-  }
-  if (days > 0) {
-    return { color: '#F44336' }; // Red
-  }
-  return { color: '#9E9E9E' }; // Gray
-};
-
-export function StorageCircle({ daysRemaining, size, onPress }: StorageCircleProps) {
+const StorageCircle: React.FC<StorageCircleProps> = ({ daysRemaining, size, onPress }) => {
   const diameter = size === 'small' ? 40 : 60;
   const strokeWidth = 4;
   const radius = (diameter - strokeWidth) / 2;
 
-  const { color } = getStorageStatus(daysRemaining);
+  const getColor = () => {
+    if (daysRemaining >= 14) {
+      return HEALTH_CIRCLE_COLORS.HEALTHY;
+    }
+    if (daysRemaining >= 7) {
+      return HEALTH_CIRCLE_COLORS.ATTENTION;
+    }
+    if (daysRemaining > 0) {
+      return HEALTH_CIRCLE_COLORS.CRITICAL;
+    }
+    return NEUTRAL_COLORS.DIVIDER;
+  };
+
+  const color = getColor();
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.container}>
-      <Svg width={diameter} height={diameter} viewBox={`0 0 ${diameter} ${diameter}`}>
+    <TouchableOpacity onPress={onPress} disabled={!onPress} style={[styles.container, { width: diameter, height: diameter }]}>
+      <Svg width={diameter} height={diameter}>
         <Circle
           stroke={color}
-          fill="transparent"
+          fill="none"
           cx={diameter / 2}
           cy={diameter / 2}
           r={radius}
           strokeWidth={strokeWidth}
         />
-        <SvgText
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dy="0.3em"
-          fontSize={diameter * 0.4}
-          fontWeight="bold"
-          fill={color}
-        >
-          {daysRemaining}
-        </SvgText>
       </Svg>
+      <View style={styles.textContainer}>
+        <Text style={[styles.daysText, { fontSize: diameter * 0.4, color }]}>
+          {daysRemaining}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 8, // For spacing in a horizontal layout
+  },
+  textContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  daysText: {
+    fontWeight: FONT_WEIGHTS.bold as any,
   },
 });
+
+export default StorageCircle;

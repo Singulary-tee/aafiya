@@ -1,107 +1,58 @@
 
-import { Profile } from '@/database/models/Profile';
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
-import React, { useState } from 'react';
-import { FlatList, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, FlatList } from 'react-native';
+import { ProfileAvatar } from './ProfileAvatar';
+import Button from '../common/Button';
+import { SPACING } from '@/src/constants/spacing';
+
+// TODO: Move to a dedicated types file
+export interface Profile {
+  id: string;
+  name: string;
+  avatarColor: string;
+}
 
 interface ProfileSelectorProps {
   profiles: Profile[];
-  activeProfile: Profile;
-  onSelectProfile: (profile: Profile) => void;
+  selectedProfileId: string | null;
+  onSelectProfile: (profileId: string) => void;
+  onAddProfile: () => void;
 }
 
-export function ProfileSelector({ profiles, activeProfile, onSelectProfile }: ProfileSelectorProps) {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const renderProfileItem = ({ item }: { item: Profile }) => (
-    <TouchableOpacity
-      style={styles.profileItem}
-      onPress={() => {
-        onSelectProfile(item);
-        setModalVisible(false);
-      }}
-    >
-      <View style={[styles.avatar, { backgroundColor: item.avatar_color }]} />
-      <ThemedText style={styles.profileName}>{item.name}</ThemedText>
-    </TouchableOpacity>
-  );
-
+export function ProfileSelector({ profiles, selectedProfileId, onSelectProfile, onAddProfile }: ProfileSelectorProps) {
   return (
-    <View>
-      <TouchableOpacity style={styles.selector}
-        onPress={() => setModalVisible(true)}
-      >
-        <View style={[styles.avatar, { backgroundColor: activeProfile.avatar_color }]} />
-        <ThemedText style={styles.activeProfileName}>{activeProfile.name}</ThemedText>
-      </TouchableOpacity>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <ThemedView style={styles.modalContent}>
-            <ThemedText style={styles.modalTitle}>Select a Profile</ThemedText>
-            <FlatList
-              data={profiles}
-              renderItem={renderProfileItem}
-              keyExtractor={(item) => item.id}
+    <View style={styles.container}>
+      <FlatList
+        data={profiles}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={[styles.profileContainer, selectedProfileId === item.id && styles.selected]}>
+            <ProfileAvatar
+              name={item.name}
+              color={item.avatarColor}
+              size="medium"
             />
-          </ThemedView>
-        </View>
-      </Modal>
+          </View>
+        )}
+        ListFooterComponent={<Button title="Add Profile" onPress={onAddProfile} />}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  selector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+  container: {
+    padding: SPACING.md,
   },
-  avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 12,
+  profileContainer: {
+    marginRight: SPACING.md,
+    padding: SPACING.xs,
+    borderRadius: 50,
   },
-  activeProfileName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    borderRadius: 10,
-    padding: 20,
-    maxHeight: '60%',
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  profileItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  profileName: {
-    fontSize: 18,
+  selected: {
+    borderColor: 'blue', // Placeholder for selection color
+    borderWidth: 2,
   },
 });

@@ -1,20 +1,41 @@
+
+export const PRIMARY_COLORS = {
+  PRIMARY: '#4CAF50',
+  SECONDARY: '#2196F3',
+  ACCENT: '#FF9800',
+};
+
+export const HEALTH_CIRCLE_COLORS = {
+  HEALTHY: '#4CAF50',
+  ATTENTION: '#FFC107',
+  RISK: '#FF9800',
+  CRITICAL: '#F44336',
+};
+
+export const NEUTRAL_COLORS = {
+  BACKGROUND: '#FAFAFA',
+  SURFACE: '#FFFFFF',
+  TEXT_PRIMARY: '#212121',
+  TEXT_SECONDARY: '#757575',
+  DIVIDER: '#E0E0E0',
+};
+
+// Consolidating all colors for easier import
 export const COLORS = {
-  primary: '#4CAF50', // Green - Health, medication
-  secondary: '#2196F3', // Blue - Information, actions
-  accent: '#FF9800', // Orange - Warnings, attention
-
-  health: {
-    healthy: '#4CAF50', // Green
-    attention: '#FFC107', // Yellow
-    risk: '#FF9800', // Orange
-    critical: '#F44336', // Red
-  },
-
-  neutral: {
-    background: '#FAFAFA', // Light gray
-    surface: '#FFFFFF', // White
-    textPrimary: '#212121', // Almost black
-    textSecondary: '#757575', // Medium gray
-    divider: '#E0E0E0', // Light gray
-  },
+  ...PRIMARY_COLORS,
+  ...HEALTH_CIRCLE_COLORS,
+  ...NEUTRAL_COLORS,
+  // Direct mappings for convenience
+  primary: PRIMARY_COLORS.PRIMARY,
+  secondary: PRIMARY_COLORS.SECONDARY,
+  accent: PRIMARY_COLORS.ACCENT,
+  healthy: HEALTH_CIRCLE_COLORS.HEALTHY,
+  attention: HEALTH_CIRCLE_COLORS.ATTENTION,
+  risk: HEALTH_CIRCLE_COLORS.RISK,
+  critical: HEALTH_CIRCLE_COLORS.CRITICAL,
+  background: NEUTRAL_COLORS.BACKGROUND,
+  surface: NEUTRAL_COLORS.SURFACE,
+  textPrimary: NEUTRAL_COLORS.TEXT_PRIMARY,
+  textSecondary: NEUTRAL_COLORS.TEXT_SECONDARY,
+  divider: NEUTRAL_COLORS.DIVIDER,
 };

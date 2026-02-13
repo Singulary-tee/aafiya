@@ -1,97 +1,80 @@
-/**
- * Validation Utility Functions
- * Input validation for medications, schedules, profiles
- */
-
-export interface ValidationError {
-  field: string;
-  message: string;
-}
 
 /**
- * Validate medication name
- * Requirements: 1-200 characters, required
+ * Validates that a string is not empty and within a specified length range.
+ * @param input - The string to validate.
+ * @param minLength - The minimum allowed length.
+ * @param maxLength - The maximum allowed length.
+ * @returns True if the string is valid, false otherwise.
  */
-export function validateMedicationName(name: string): ValidationError | null {
-  if (!name || name.trim().length === 0) {
-    return { field: 'name', message: 'Medication name is required' };
-  }
-  if (name.length > 200) {
-    return { field: 'name', message: 'Medication name cannot exceed 200 characters' };
-  }
-  return null;
-}
+const validateStringLength = (input: string, minLength: number, maxLength: number): boolean => {
+  return typeof input === 'string' && input.length >= minLength && input.length <= maxLength;
+};
 
 /**
- * Validate profile name
- * Requirements: 1-50 characters, required
+ * Validates a profile name based on length constraints.
+ * @param name - The profile name.
+ * @returns True if valid (1-50 characters), false otherwise.
  */
-export function validateProfileName(name: string): ValidationError | null {
-  if (!name || name.trim().length === 0) {
-    return { field: 'name', message: 'Profile name is required' };
-  }
-  if (name.length > 50) {
-    return { field: 'name', message: 'Profile name cannot exceed 50 characters' };
-  }
-  return null;
-}
+export const validateProfileName = (name: string): boolean => {
+  return validateStringLength(name, 1, 50);
+};
 
 /**
- * Validate hex color code
+ * Validates a medication name based on length constraints.
+ * @param name - The medication name.
+ * @returns True if valid (1-200 characters), false otherwise.
  */
-export function validateHexColor(color: string): ValidationError | null {
-  const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-  if (!hexRegex.test(color)) {
-    return { field: 'color', message: 'Invalid hex color code' };
-  }
-  return null;
-}
+export const validateMedicationName = (name: string): boolean => {
+  return validateStringLength(name, 1, 200);
+};
 
 /**
- * Validate pill count
- * Requirements: integer >= 0
+ * Validates a hex color code.
+ * @param color - The color string.
+ * @returns True if it's a valid #RRGGBB format, false otherwise.
  */
-export function validatePillCount(count: number): ValidationError | null {
-  if (!Number.isInteger(count)) {
-    return { field: 'count', message: 'Pill count must be a whole number' };
-  }
-  if (count < 0) {
-    return { field: 'count', message: 'Pill count cannot be negative' };
-  }
-  return null;
-}
+export const validateHexColor = (color: string): boolean => {
+  return /^#[0-9a-fA-F]{6}$/.test(color);
+};
 
 /**
- * Validate time string format (HH:mm)
+ * Validates if a number is a non-negative integer.
+ * @param count - The number to validate.
+ * @returns True if it's a non-negative integer, false otherwise.
  */
-export function validateTimeFormat(time: string): ValidationError | null {
-  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-  if (!timeRegex.test(time)) {
-    return { field: 'time', message: 'Invalid time format. Use HH:mm' };
-  }
-  return null;
-}
+export const validateCount = (count: number): boolean => {
+  return Number.isInteger(count) && count >= 0;
+};
 
 /**
- * Validate grace period in minutes
- * Requirements: 0-120 minutes
+ * Validates an array of time strings in HH:MM format.
+ * @param times - The array of time strings.
+ * @returns True if the array is valid, false otherwise.
  */
-export function validateGracePeriod(minutes: number): ValidationError | null {
-  if (!Number.isInteger(minutes)) {
-    return { field: 'gracePeriod', message: 'Grace period must be a whole number' };
-  }
-  if (minutes < 0 || minutes > 120) {
-    return { field: 'gracePeriod', message: 'Grace period must be between 0 and 120 minutes' };
-  }
-  return null;
-}
+export const validateScheduleTimes = (times: string[]): boolean => {
+  if (!Array.isArray(times) || times.length === 0) return false;
+  const timeRegex = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+  return times.every(time => timeRegex.test(time));
+};
 
 /**
- * Validate that current_count doesn't exceed initial_count
+ * Validates the grace period in minutes.
+ * @param minutes - The grace period.
+ * @returns True if between 5 and 120 (inclusive), false otherwise.
  */
-export function validatePillCountConsistency(initialCount: number, currentCount: number): ValidationError | null {
-  if (currentCount > initialCount) {
-    return { field: 'currentCount', message: 'Current count cannot exceed initial count' };
-  }
-  return null;
-}
+export const validateGracePeriod = (minutes: number): boolean => {
+  return Number.isInteger(minutes) && minutes >= 5 && minutes <= 120;
+};
+
+/**
+ * Validates the days of the week array.
+ * @param days - An array of numbers (0-6) or null.
+ * @returns True if valid, false otherwise.
+ */
+export const validateDaysOfWeek = (days: number[] | null): boolean => {
+  if (days === null) return true;
+  if (!Array.isArray(days)) return false;
+  const uniqueDays = new Set(days);
+  if (uniqueDays.size !== days.length) return false; // No duplicates
+  return days.every(day => Number.isInteger(day) && day >= 0 && day <= 6);
+};

@@ -15,7 +15,7 @@ export function useDoses(medicationId: string) {
 
     const loadDoses = useCallback(async () => {
         if (doseLogRepository) {
-            const doseLogs = await doseLogRepository.getForMedication(medicationId);
+            const doseLogs = await doseLogRepository.findByMedicationId(medicationId);
             setDoses(doseLogs);
         }
     }, [doseLogRepository, medicationId]);

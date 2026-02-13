@@ -3,6 +3,7 @@ import { NotificationScheduler } from "../services/notification/NotificationSche
 import { Medication } from "../database/models/Medication";
 import { Schedule } from "../database/models/Schedule";
 import { useCallback } from "react";
+import { DoseLogRepository } from "../database/repositories/DoseLogRepository";
 
 /**
  * useNotifications
@@ -13,15 +14,17 @@ export function useNotifications() {
 
     const scheduleNotifications = useCallback(async (medication: Medication, schedule: Schedule) => {
         if (db) {
-            const scheduler = new NotificationScheduler();
-            await scheduler.schedule(medication, schedule);
+            const doseLogRepository = new DoseLogRepository(db);
+            const scheduler = new NotificationScheduler(doseLogRepository);
+            await scheduler.scheduleNotifications(medication, schedule);
         }
     }, [db]);
 
     const cancelNotifications = useCallback(async (medicationId: string) => {
         if (db) {
-            const scheduler = new NotificationScheduler();
-            await scheduler.cancel(medicationId);
+            const doseLogRepository = new DoseLogRepository(db);
+            const scheduler = new NotificationScheduler(doseLogRepository);
+            await scheduler.cancelNotifications(medicationId);
         }
     }, [db]);
 

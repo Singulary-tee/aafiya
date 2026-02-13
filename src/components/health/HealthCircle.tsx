@@ -1,54 +1,52 @@
 
-import { COLORS } from '@/constants/colors';
-import { ThemedText } from '@/src/components/themed-text';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Text as SvgText } from 'react-native-svg';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
+import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
+import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
 
-// Props as defined in the blueprint
 interface HealthCircleProps {
   score: number;
   size: number;
-  animated?: boolean;
 }
 
-const getHealthStatus = (score: number): { color: string; label: string } => {
-  if (score >= 75) {
-    return { color: COLORS.light.tint, label: 'Healthy' }; // Green
-  }
-  if (score >= 50) {
-    return { color: '#FFC107', label: 'Needs Attention' }; // Yellow
-  }
-  if (score >= 25) {
-    return { color: '#FF9800', label: 'At Risk' }; // Orange
-  }
-  return { color: '#F44336', label: 'Critical' }; // Red
-};
-
-export function HealthCircle({ score, size }: HealthCircleProps) {
+const HealthCircle: React.FC<HealthCircleProps> = ({ score, size }) => {
+  const { t } = useTranslation('home');
   const strokeWidth = size * 0.12;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const progress = circumference - (score / 100) * circumference;
 
-  const { color, label } = getHealthStatus(score);
+  const getColorAndLabel = () => {
+    if (score >= 75) {
+      return { color: HEALTH_CIRCLE_COLORS.HEALTHY, label: t('healthStatus.healthy') };
+    }
+    if (score >= 50) {
+      return { color: HEALTH_CIRCLE_COLORS.ATTENTION, label: t('healthStatus.attention') };
+    }
+    if (score >= 25) {
+      return { color: HEALTH_CIRCLE_COLORS.RISK, label: t('healthStatus.risk') };
+    }
+    return { color: HEALTH_CIRCLE_COLORS.CRITICAL, label: t('healthStatus.critical') };
+  };
+
+  const { color, label } = getColorAndLabel();
 
   return (
-    <View style={styles.container}>
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Background Circle */}
+    <View style={[styles.container, { width: size, height: size }]}>
+      <Svg width={size} height={size}>
         <Circle
-          stroke="#E0E0E0"
-          fill="transparent"
+          stroke={NEUTRAL_COLORS.DIVIDER}
+          fill="none"
           cx={size / 2}
           cy={size / 2}
           r={radius}
           strokeWidth={strokeWidth}
         />
-        {/* Progress Circle */}
         <Circle
           stroke={color}
-          fill="transparent"
+          fill="none"
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -58,32 +56,34 @@ export function HealthCircle({ score, size }: HealthCircleProps) {
           strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
-        {/* Center Text */}
-        <SvgText
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dy="0.3em"
-          fontSize={size * 0.25}
-          fontWeight="bold"
-          fill={color}
-        >
-          {`${Math.round(score)}%`}
-        </SvgText>
       </Svg>
-      <ThemedText style={[styles.statusLabel, { color }]}>{label}</ThemedText>
+      <View style={styles.textContainer}>
+        <Text style={[styles.scoreText, { fontSize: size * 0.3 }]}>{`${Math.round(score)}%`}</Text>
+        <Text style={[styles.label, { color }]}>{label}</Text>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statusLabel: {
-    marginTop: 8,
-    fontSize: 20,
-    fontWeight: '500',
+  textContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scoreText: {
+    color: NEUTRAL_COLORS.TEXT_PRIMARY,
+    fontWeight: FONT_WEIGHTS.bold as any,
+  },
+  label: {
+    fontSize: FONT_SIZES.caption,
+    fontWeight: FONT_WEIGHTS.medium as any,
+    marginTop: 4,
   },
 });
+
+export default HealthCircle;

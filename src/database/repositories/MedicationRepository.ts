@@ -1,113 +1,135 @@
-
 import { SQLiteDatabase } from 'expo-sqlite';
-import { IRepository } from './IRepository';
-import { Medication, MedicationInput, MedicationUpdate } from '../models/Medication';
-import { v4 as uuidv4 } from 'uuid';
+import { generateUUID } from '../../utils/uuid';
+import { Medication } from '../models/Medication';
 
-export class MedicationRepository implements IRepository<Medication, MedicationInput & { profile_id: string }, MedicationUpdate> {
+/**
+ * Data required to create a new medication.
+ * The 'id', 'is_active', 'created_at', and 'updated_at' fields are auto-generated.
+ */
+export type MedicationData = Omit<Medication, 'id' | 'is_active' | 'created_at' | 'updated_at'>;
+
+/**
+ * Data that can be updated on an existing medication.
+ * The 'id' and 'profile_id' are used for lookup and cannot be changed.
+ */
+export type MedicationUpdate = Partial<Omit<Medication, 'id' | 'profile_id' | 'created_at' | 'updated_at'>>;
+
+export class MedicationRepository {
     private db: SQLiteDatabase;
 
     constructor(db: SQLiteDatabase) {
         this.db = db;
     }
 
-    async create(input: MedicationInput & { profile_id: string }): Promise<Medication> {
+    /**
+     * Creates a new medication for a profile.
+     * @param data The data for the new medication.
+     * @returns The newly created medication object.
+     */
+    async create(data: MedicationData): Promise<Medication> {
         const now = Date.now();
-        const newMedication: Medication = {
-            id: uuidv4(),
-            ...input,
-            current_count: input.initial_count,
-            is_active: 1,
+        // Let TypeScript infer the type of this object, which will not include `undefined`
+        const newMedication = {
+            id: generateUUID(),
+            profile_id: data.profile_id,
+            rxcui: data.rxcui ?? null,
+            name: data.name,
+            generic_name: data.generic_name ?? null,
+            brand_name: data.brand_name ?? null,
+            dosage_form: data.dosage_form ?? null,
+            strength: data.strength ?? null,
+            initial_count: data.initial_count,
+            current_count: data.current_count,
+            image_url: data.image_url ?? null,
+            notes: data.notes ?? null,
+            is_active: 1, // Active by default
             created_at: now,
             updated_at: now,
         };
 
         await this.db.runAsync(
             `INSERT INTO medications (id, profile_id, rxcui, name, generic_name, brand_name, dosage_form, strength, initial_count, current_count, image_url, notes, is_active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 newMedication.id,
                 newMedication.profile_id,
-                newMedication.rxcui || null,
+                newMedication.rxcui,
                 newMedication.name,
-                newMedication.generic_name || null,
-                newMedication.brand_name || null,
-                newMedication.dosage_form || null,
-                newMedication.strength || null,
+                newMedication.generic_name,
+                newMedication.brand_name,
+                newMedication.dosage_form,
+                newMedication.strength,
                 newMedication.initial_count,
                 newMedication.current_count,
-                newMedication.image_url || null,
-                newMedication.notes || null,
+                newMedication.image_url,
+                newMedication.notes,
                 newMedication.is_active,
                 newMedication.created_at,
-                newMedication.updated_at,
+                newMedication.updated_at
             ]
         );
-
+        // The inferred type of newMedication is structurally compatible with Medication
         return newMedication;
     }
 
+    /**
+     * Finds a medication by its unique ID.
+     * @param id The ID of the medication.
+     * @returns The medication object, or null if not found.
+     */
     async findById(id: string): Promise<Medication | null> {
-        const result = await this.db.getFirstAsync<Medication>(
-            'SELECT * FROM medications WHERE id = ?;',
-            [id]
-        );
-        return result || null;
+        return await this.db.getFirstAsync<Medication>('SELECT * FROM medications WHERE id = ?', [id]) ?? null;
     }
 
-    async findAll(filters: { profile_id: string; is_active?: boolean }): Promise<Medication[]> {
-        let query = 'SELECT * FROM medications WHERE profile_id = ?';
-        const params: any[] = [filters.profile_id];
-
-        if (filters.is_active !== undefined) {
-            query += ' AND is_active = ?';
-            params.push(filters.is_active ? 1 : 0);
-        }
-
-        query += ' ORDER BY created_at DESC;';
-
-        const results = await this.db.getAllAsync<Medication>(query, params);
-        return results;
+    /**
+     * Finds all medications associated with a specific profile.
+     * @param profileId The ID of the profile.
+     * @returns A list of medications.
+     */
+    async findByProfileId(profileId: string): Promise<Medication[]> {
+        return await this.db.getAllAsync<Medication>('SELECT * FROM medications WHERE profile_id = ?', [profileId]);
     }
 
-    async update(id: string, input: MedicationUpdate): Promise<Medication> {
-        const now = Date.now();
+    /**
+     * Updates an existing medication.
+     * @param id The ID of the medication to update.
+     * @param data An object containing the fields to update.
+     * @returns The updated medication object.
+     */
+    async update(id: string, data: MedicationUpdate): Promise<Medication> {
         const existing = await this.findById(id);
         if (!existing) {
             throw new Error('Medication not found');
         }
 
-        const fields = Object.keys(input).map(key => `${key} = ?`).join(', ');
-        const values = Object.values(input);
+        const fieldsToUpdate = Object.keys(data).filter(key => key !== 'id');
+        if (fieldsToUpdate.length === 0) return existing;
 
-        if (fields.length === 0) {
-            return existing;
-        }
+        const setClause = fieldsToUpdate.map(key => `${key} = ?`).join(', ');
+        const values = fieldsToUpdate.map(key => {
+            const value = data[key as keyof MedicationUpdate];
+            return value === undefined ? null : value;
+        });
+        
+        const now = Date.now();
 
         await this.db.runAsync(
-            `UPDATE medications SET ${fields}, updated_at = ? WHERE id = ?;`,
+            `UPDATE medications SET ${setClause}, updated_at = ? WHERE id = ?`,
             [...values, now, id]
         );
 
-        return { ...existing, ...input, updated_at: now };
-    }
-
-    async delete(id: string): Promise<boolean> {
-        const result = await this.db.runAsync('DELETE FROM medications WHERE id = ?;', [id]);
-        return (result.changes ?? 0) > 0;
-    }
-
-    async decrementCount(id: string, amount: number): Promise<Medication> {
-        const now = Date.now();
-        await this.db.runAsync(
-            'UPDATE medications SET current_count = current_count - ?, updated_at = ? WHERE id = ? AND current_count >= ?;',
-            [amount, now, id, amount]
-        );
-
-        const updated = await this.findById(id);
-        if (!updated) {
-            throw new Error('Medication not found after decrementing count.');
+        const updatedMedication = await this.findById(id);
+        if (!updatedMedication) {
+            throw new Error('Medication not found after update');
         }
-        return updated;
+        return updatedMedication;
+    }
+
+    /**
+     * Deletes a medication by its ID.
+     * @param id The ID of the medication to delete.
+     */
+    async delete(id: string): Promise<void> {
+        await this.db.runAsync('DELETE FROM medications WHERE id = ?', [id]);
     }
 }

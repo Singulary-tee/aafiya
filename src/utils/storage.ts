@@ -1,61 +1,63 @@
-/**
- * AsyncStorage Utility Functions
- * Centralized helpers for persisting app state
- */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
-const STORAGE_KEYS = {
-  LANGUAGE: 'app_language',
-  ACTIVE_PROFILE_ID: 'active_profile_id',
-  ONBOARDING_COMPLETE: 'onboarding_complete',
-  NOTIFICATION_SETTINGS: 'notification_settings',
-  THEME_MODE: 'theme_mode',
-} as const;
+// AsyncStorage for non-sensitive data
 
-export async function setLanguage(language: string): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
-}
+/**
+ * Stores a value in AsyncStorage.
+ * @param key - The key to store the value under.
+ * @param value - The value to store (will be stringified).
+ */
+export const storeData = async (key: string, value: any): Promise<void> => {
+  try {
+    const jsonValue = JSON.stringify(value);
+    await AsyncStorage.setItem(key, jsonValue);
+  } catch (e) {
+    console.error('Failed to save data to AsyncStorage', e);
+  }
+};
 
-export async function getLanguage(): Promise<string | null> {
-  return AsyncStorage.getItem(STORAGE_KEYS.LANGUAGE);
-}
+/**
+ * Retrieves a value from AsyncStorage.
+ * @param key - The key of the value to retrieve.
+ * @returns The parsed value, or null if not found.
+ */
+export const getData = async (key: string): Promise<any> => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(key);
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
+  } catch (e) {
+    console.error('Failed to fetch data from AsyncStorage', e);
+    return null;
+  }
+};
 
-export async function setActiveProfileId(profileId: string): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_PROFILE_ID, profileId);
-}
+// SecureStore for sensitive data
 
-export async function getActiveProfileId(): Promise<string | null> {
-  return AsyncStorage.getItem(STORAGE_KEYS.ACTIVE_PROFILE_ID);
-}
+/**
+ * Stores a value securely in SecureStore.
+ * @param key - The key to store the value under.
+ * @param value - The string value to store.
+ */
+export const storeSecureData = async (key: string, value: string): Promise<void> => {
+  try {
+    await SecureStore.setItemAsync(key, value);
+  } catch (e) {
+    console.error('Failed to save data to SecureStore', e);
+  }
+};
 
-export async function setOnboardingComplete(isComplete: boolean): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, JSON.stringify(isComplete));
-}
-
-export async function getOnboardingComplete(): Promise<boolean> {
-  const value = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETE);
-  return value ? JSON.parse(value) : false;
-}
-
-export async function setNotificationSettings(settings: Record<string, unknown>): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(settings));
-}
-
-export async function getNotificationSettings(): Promise<Record<string, unknown>> {
-  const value = await AsyncStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
-  return value ? JSON.parse(value) : {};
-}
-
-export async function setThemeMode(theme: string): Promise<void> {
-    await AsyncStorage.setItem(STORAGE_KEYS.THEME_MODE, theme);
-}
-
-export async function getThemeMode(): Promise<string | null> {
-    return AsyncStorage.getItem(STORAGE_KEYS.THEME_MODE);
-}
-
-export async function clearAppStorage(): Promise<void> {
-  const keys = Object.values(STORAGE_KEYS);
-  await AsyncStorage.multiRemove(keys);
-}
+/**
+ * Retrieves a value from SecureStore.
+ * @param key - The key of the value to retrieve.
+ * @returns The value, or null if not found.
+ */
+export const getSecureData = async (key: string): Promise<string | null> => {
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch (e) {
+    console.error('Failed to fetch data from SecureStore', e);
+    return null;
+  }
+};

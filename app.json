@@ -8,7 +8,6 @@
     "scheme": "aafiya",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -79,7 +78,8 @@
         {
           "cameraPermission": "Camera access is required to scan QR codes for helper pairing."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

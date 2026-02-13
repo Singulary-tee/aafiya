@@ -1,73 +1,60 @@
+
+import { getLocales } from 'expo-localization';
+
 /**
- * Date Utility Functions
- * Date formatting and calculations for scheduling
+ * Formats a date into a localized string (e.g., "February 11, 2026").
+ * @param date - The date to format.
+ * @returns A localized date string.
  */
+export const formatDate = (date: Date): string => {
+  const locale = getLocales()[0]?.languageTag ?? 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+};
 
-export function getCurrentTimestamp(): number {
-  return Math.floor(Date.now() / 1000);
-}
-
-export function getDateFromTimestamp(timestamp: number): Date {
-  return new Date(timestamp * 1000);
-}
-
-export function getTimestampFromDate(date: Date): number {
-  return Math.floor(date.getTime() / 1000);
-}
-
-export function formatTime(timestamp: number, locale: string = 'en-US'): string {
-  const date = getDateFromTimestamp(timestamp);
-  return date.toLocaleTimeString(locale, {
-    hour: '2-digit',
+/**
+ * Formats a date into a localized time string (e.g., "9:00 AM").
+ * @param date - The date to format.
+ * @returns A localized time string.
+ */
+export const formatTime = (date: Date): string => {
+  const locale = getLocales()[0]?.languageTag ?? 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
     minute: '2-digit',
-  });
-}
-
-export function formatDate(timestamp: number, locale: string = 'en-US'): string {
-  const date = getDateFromTimestamp(timestamp);
-  return date.toLocaleDateString(locale);
-}
-
-export function formatDateTime(timestamp: number, locale: string = 'en-US'): string {
-  const date = getDateFromTimestamp(timestamp);
-  return date.toLocaleString(locale);
-}
+    hour12: true,
+  }).format(date);
+};
 
 /**
- * Parse time string in HH:mm format to today's timestamp
+ * Formats a number into a string, with an option to use Eastern Arabic numerals.
+ * @param num - The number to format.
+ * @param useEasternArabic - Whether to use Eastern Arabic numerals.
+ * @returns A formatted number string.
  */
-export function parseTimeToTodayTimestamp(timeString: string): number {
-  const today = new Date();
-  const [hours, minutes] = timeString.split(':').map(Number);
-  const scheduledDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0);
-  return getTimestampFromDate(scheduledDate);
-}
-
-/**
- * Check if a timestamp is within grace period from scheduled time
- */
-export function isWithinGracePeriod(scheduledTime: number, gracePeriodMinutes: number, currentTime: number = getCurrentTimestamp()): boolean {
-  const gracePeriodSeconds = gracePeriodMinutes * 60;
-  const endOfGracePeriod = scheduledTime + gracePeriodSeconds;
-  return currentTime <= endOfGracePeriod;
-}
-
-/**
- * Calculate streak based on dose logs
- */
-export function calculateStreak(doseLogs: Array<{ status: string; scheduled_time: number }>): number {
-  if (doseLogs.length === 0) return 0;
-
-  let streak = 0;
-  const sortedLogs = [...doseLogs].sort((a, b) => b.scheduled_time - a.scheduled_time);
-
-  for (const log of sortedLogs) {
-    if (log.status === 'taken') {
-      streak++;
-    } else {
-      break;
-    }
+export const formatNumber = (num: number, useEasternArabic: boolean): string => {
+  if (!useEasternArabic) {
+    return num.toString();
   }
+  const easternNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return num.toString().split('').map(d => {
+    const parsed = parseInt(d, 10);
+    return isNaN(parsed) ? d : easternNumerals[parsed];
+  }).join('');
+};
 
-  return streak;
-}
+/**
+ * Calculates the number of days remaining for a medication supply.
+ * @param currentCount - The current number of pills.
+ * @param dosesPerDay - The number of doses taken per day.
+ * @returns The estimated number of days remaining.
+ */
+export const calculateDaysRemaining = (currentCount: number, dosesPerDay: number): number => {
+  if (dosesPerDay <= 0) {
+    return Infinity;
+  }
+  return Math.floor(currentCount / dosesPerDay);
+};
