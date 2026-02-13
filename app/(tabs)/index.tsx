@@ -1,98 +1,234 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/src/components/parallax-scroll-view';
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
-import { Link } from 'expo-router';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+
+import { useProfile } from '@/src/hooks/useProfile';
+import { useMedications } from '@/src/hooks/useMedications';
+import { useHealthScore } from '@/src/hooks/useHealthScore';
+import { useDatabase } from '@/src/hooks/useDatabase';
+
+import HealthCircle from '@/src/components/health/HealthCircle';
+import StorageCircle from '@/src/components/health/StorageCircle';
+import DoseCard from '@/src/components/medication/DoseCard';
+import { DoseLog } from '@/src/database/models/DoseLog';
+
+import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
+import { ScheduleRepository } from '@/src/database/repositories/ScheduleRepository';
+import { DoseLogRepository } from '@/src/database/repositories/DoseLogRepository';
+import { StorageCalculatorService } from '@/src/services/health/StorageCalculator';
+import { COLORS } from '@/src/constants/colors';
+import { Medication } from '@/src/database/models/Medication';
+
+type Dose = {
+  medication: Medication;
+  scheduledTime: string;
+  status: 'pending' | 'taken' | 'missed' | 'skipped';
+  schedule_id: string;
+};
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { t } = useTranslation('home');
+  const db = useDatabase();
+  const { activeProfile } = useProfile();
+  const { medications, isLoading: medsLoading } = useMedications(activeProfile?.id || '');
+  const { healthScore, refreshHealthScore } = useHealthScore(activeProfile?.id || '');
+  const [scoreLoading, setScoreLoading] = useState(false);
+  const [todayDoses, setTodayDoses] = useState<Dose[]>([]);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const refreshScore = useCallback(async () => {
+    setScoreLoading(true);
+    await refreshHealthScore();
+    setScoreLoading(false);
+  }, [refreshHealthScore]);
+
+  const loadDoses = useCallback(async () => {
+    if (!db || !medications.length) return;
+
+    const scheduleRepo = new ScheduleRepository(db);
+    const doseLogRepo = new DoseLogRepository(db);
+
+    let needsScoreRefresh = false;
+    const allDoses: Dose[] = [];
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+
+    for (const med of medications) {
+      const schedules = await scheduleRepo.findByMedicationId(med.id);
+      for (const schedule of schedules) {
+        const runsToday = !schedule.days_of_week || schedule.days_of_week.includes(dayOfWeek);
+        if (runsToday) {
+          for (const time of schedule.times) {
+            const [hour, minute] = time.split(':').map(Number);
+            const scheduledDateTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+
+            const existingLog = await doseLogRepo.findByMedicationAndScheduledTime(med.id, scheduledDateTime.getTime());
+
+            let status: Dose['status'] = 'pending';
+            if (existingLog) {
+              status = existingLog.status as Dose['status'];
+            } else if (new Date() > scheduledDateTime) {
+              status = 'missed';
+              await doseLogRepo.create({
+                medication_id: med.id,
+                schedule_id: schedule.id,
+                scheduled_time: scheduledDateTime.getTime(),
+                status: 'missed',
+                actual_time: null,
+                notes: 'Automatically logged as missed',
+              } as DoseLog);
+              needsScoreRefresh = true;
+            }
+
+            allDoses.push({
+              medication: med,
+              scheduledTime: time,
+              status: status,
+              schedule_id: schedule.id,
+            });
+          }
+        }
+      }
+    }
+    allDoses.sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
+    setTodayDoses(allDoses);
+
+    if (needsScoreRefresh) {
+      refreshScore();
+    }
+  }, [medications, db, refreshScore]);
+
+  useEffect(() => {
+    loadDoses();
+  }, [loadDoses]);
+
+  const handleLogDose = async (dose: Dose, status: 'taken' | 'skipped') => {
+    if (!db) return;
+    const doseLogRepo = new DoseLogRepository(db);
+
+    const today = new Date();
+    const [hour, minute] = dose.scheduledTime.split(':').map(Number);
+    const scheduledDateTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+
+    const newLog: Omit<DoseLog, 'id' | 'created_at'> = {
+      medication_id: dose.medication.id,
+      schedule_id: dose.schedule_id,
+      scheduled_time: scheduledDateTime.getTime(),
+      actual_time: new Date().getTime(),
+      status: status,
+      notes: null,
+    };
+
+    await doseLogRepo.create(newLog as DoseLog);
+    await loadDoses(); // Refresh doses
+    await refreshScore(); // Refresh health score
+  };
+
+  const [storageInfo, setStorageInfo] = React.useState<{[medId: string]: number | null}>({});
+
+  React.useEffect(() => {
+    if (!db || !medications.length) return;
+
+    const fetchStorageInfo = async () => {
+      const medicationRepo = new MedicationRepository(db);
+      const scheduleRepo = new ScheduleRepository(db);
+      const storageCalculator = new StorageCalculatorService(medicationRepo, scheduleRepo);
+      const info: { [medId: string]: number | null } = {};
+      for (const med of medications) {
+        const storage = await storageCalculator.getStorageInfo(med.id);
+        info[med.id] = storage?.daysRemaining ?? null;
+      }
+      setStorageInfo(info);
+    };
+
+    fetchStorageInfo();
+  }, [medications, db]);
+
+
+  if (medsLoading || scoreLoading) {
+    return <ActivityIndicator style={styles.centered} />;
+  }
+
+  if (!activeProfile) {
+    return (
+      <View style={styles.centered}>
+        <Text>{t('no_active_profile')}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>{t('welcome')}, {activeProfile.name}</Text>
+
+      <View style={styles.topSection}>
+        <HealthCircle score={healthScore} size={150} />
+        <View style={styles.storageSection}>
+          <Text style={styles.subHeader}>{t('storage_levels')}</Text>
+          {medications.map(med => (
+            <View key={med.id} style={styles.storageItem}>
+              <Text style={styles.medName}>{med.name}</Text>
+              <StorageCircle daysRemaining={storageInfo[med.id] ?? 0} size="small" />
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.dosesSection}>
+        <Text style={styles.subHeader}>{t('todays_doses')}</Text>
+        {todayDoses.map((dose, index) => (
+          <DoseCard
+            key={index}
+            {...dose}
+            onTake={() => handleLogDose(dose, 'taken')}
+            onSkip={() => handleLogDose(dose, 'skipped')}
+          />
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: COLORS.background,
   },
-  stepContainer: {
-    gap: 8,
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  subHeader: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  topSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  storageSection: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  storageItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  medName: {
+    fontSize: 16,
+  },
+  dosesSection: {
+    // Add styles if needed
   },
 });

@@ -1,37 +1,39 @@
 
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 
-import { IconSymbol } from '@/src/components/ui/icon-symbol';
-import { Colors } from '@/src/constants/colors';
+import { COLORS } from '@/src/constants/colors';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors['light'].tint,
+        tabBarActiveTintColor: COLORS.primary,
         headerShown: false,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: t('home:home'),
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="medications"
         options={{
-          title: 'Medications',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="pills.fill" color={color} />,
+          title: t('medications:medications'),
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="medkit" color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          title: t('settings:settings'),
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="settings" color={color} />,
         }}
       />
     </Tabs>
