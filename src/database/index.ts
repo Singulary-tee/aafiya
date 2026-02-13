@@ -18,7 +18,7 @@ const applyMigrations = async (db: SQLite.SQLiteDatabase) => {
     let currentVersion = versionResult?.version ?? 0;
 
     if (currentVersion < 1) {
-        await db.withTransactionAsync(async () => {
+        
             // Drop tables if they already exist incorrectly
             await db.execAsync(`
                 DROP TABLE IF EXISTS helper_pairing;
@@ -131,7 +131,7 @@ const applyMigrations = async (db: SQLite.SQLiteDatabase) => {
                 DELETE FROM schema_version;
                 INSERT INTO schema_version (version, applied_at) VALUES (1, strftime('%s', 'now'));
             `);
-        });
+        
         console.log('Database schema version 1 created/updated successfully.');
     }
 };
