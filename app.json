@@ -39,7 +39,10 @@
       "bundleIdentifier": "com.medicationtracker.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is required to scan QR codes for helper pairing.",
-        "NSMicrophoneUsageDescription": "This app does not use the microphone."
+        "NSMicrophoneUsageDescription": "This app does not use the microphone.",
+        "UIBackgroundModes": [
+          "fetch"
+        ]
       }
     },
     "web": {

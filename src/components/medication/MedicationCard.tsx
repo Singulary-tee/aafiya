@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Medication } from '../../database/models/Medication';
-import { theme } from '../../constants/theme';
-import Card from '../common/Card';
-import PillImage from './PillImage';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
+import { theme } from '../../constants/theme';
+import { Medication } from '../../database/models/Medication';
+import Card from '../common/Card';
 import { Text } from '../primitives/Text';
+import PillImage from './PillImage';
 
 interface MedicationCardProps {
   medication: Medication;
@@ -18,7 +18,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({ medication }) => {
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
-        <PillImage imageUrl={medication.image_url} size={80} />
+        <PillImage imageUrl={medication.image_url ?? undefined} size={80} />
         <View style={styles.headerText}>
           <Text size="title" weight="bold">{medication.name}</Text>
           <Text size="body" style={styles.strength}>{medication.strength}</Text>

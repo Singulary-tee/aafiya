@@ -1,10 +1,6 @@
-import { subHours } from 'date-fns';
 import { DoseLogRepository } from '../../database/repositories/DoseLogRepository';
+import { ScheduleRepository } from '../../database/repositories/ScheduleRepository';
 import { logger } from '../../utils/logger';
-
-// As per the spec, a dose is missed if the scheduled time + grace period elapses with no action.
-// We'll define a 2-hour grace period.
-const GRACE_PERIOD_IN_HOURS = 2;
 
 /**
  * MissedDoseDetector
@@ -12,9 +8,11 @@ const GRACE_PERIOD_IN_HOURS = 2;
  */
 export class MissedDoseDetector {
     private doseLogRepository: DoseLogRepository;
+    private scheduleRepository: ScheduleRepository;
 
-    constructor(doseLogRepository: DoseLogRepository) {
+    constructor(doseLogRepository: DoseLogRepository, scheduleRepository: ScheduleRepository) {
         this.doseLogRepository = doseLogRepository;
+        this.scheduleRepository = scheduleRepository;
     }
 
     /**
@@ -25,28 +23,38 @@ export class MissedDoseDetector {
     async detect(): Promise<void> {
         logger.log('Checking for missed doses...');
 
-        const now = new Date();
-        const missedThreshold = subHours(now, GRACE_PERIOD_IN_HOURS);
+        const now = Date.now();
 
         try {
-            // Fetch all doses that are still pending (i.e., 'skipped' status).
-            // This is the initial status set by the NotificationScheduler.
-            const pendingDoses = await this.doseLogRepository.findByStatus('skipped');
+            // Fetch all doses that are still pending.
+            const pendingDoses = await this.doseLogRepository.findByStatus('pending');
 
-            const missedDoses = pendingDoses.filter(
-                (dose) => dose.scheduled_time < missedThreshold.getTime()
-            );
+            const scheduleCache = new Map<string, number>();
 
-            if (missedDoses.length === 0) {
+            for (const dose of pendingDoses) {
+                if (!dose.schedule_id || scheduleCache.has(dose.schedule_id)) {
+                    continue;
+                }
+                const schedule = await this.scheduleRepository.findById(dose.schedule_id);
+                scheduleCache.set(dose.schedule_id, schedule?.grace_period_minutes ?? 30);
+            }
+
+            const filteredMissedDoses = pendingDoses.filter((dose) => {
+                if (!dose.schedule_id) return false;
+                const graceMinutes = scheduleCache.get(dose.schedule_id) ?? 30;
+                return dose.scheduled_time + graceMinutes * 60 * 1000 < now;
+            });
+
+            if (filteredMissedDoses.length === 0) {
                 logger.log('No missed doses found.');
                 return;
             }
 
-            logger.log(`Found ${missedDoses.length} missed doses. Updating their status...`);
+            logger.log(`Found ${filteredMissedDoses.length} missed doses. Updating their status...`);
 
             // Use Promise.allSettled to handle potential errors for individual dose updates.
             const results = await Promise.allSettled(
-                missedDoses.map(async (dose) => {
+                filteredMissedDoses.map(async (dose) => {
                     try {
                         await this.doseLogRepository.update(dose.id, { status: 'missed' });
                     } catch (error) {

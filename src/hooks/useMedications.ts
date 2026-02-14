@@ -1,22 +1,28 @@
 
-import { useDatabase } from "./useDatabase";
-import { MedicationRepository } from "../database/repositories/MedicationRepository";
+import { useCallback, useEffect, useState } from "react";
 import { Medication } from "../database/models/Medication";
-import { useState, useEffect, useCallback } from "react";
-import { DataSyncService, Repository } from "../services/sync/DataSyncService";
-import { ConflictResolver } from "../services/sync/ConflictResolver";
-import { getData, storeData } from "../utils/storage";
-import { logger } from "../utils/logger";
-import { ScheduleRepository } from "../database/repositories/ScheduleRepository";
 import { Schedule } from "../database/models/Schedule";
-import { DrugConcept, RxNormProperty } from "../types/api";
+import { MedicationRepository } from "../database/repositories/MedicationRepository";
+import { ScheduleRepository } from "../database/repositories/ScheduleRepository";
+import { ConflictResolver } from "../services/sync/ConflictResolver";
+import { DataSyncService, Repository } from "../services/sync/DataSyncService";
+import { RxNormProperty } from "../types/api";
+import { logger } from "../utils/logger";
+import { getData, storeData } from "../utils/storage";
+import { useDatabase } from "./useDatabase";
 
 // API Imports
-import { RxNormService } from '../services/api/RxNormService';
-import { DailyMedService } from '../services/api/DailyMedService';
 import { ApiCacheRepository } from '../database/repositories/ApiCacheRepository';
+import { DailyMedService } from '../services/api/DailyMedService';
+import { RxNormService } from '../services/api/RxNormService';
 
 const LAST_SYNC_KEY = 'last_medication_sync';
+
+type MedicationSeed = {
+    name: string;
+    rxcui?: string | null;
+    synonym?: string | null;
+};
 
 export function useMedications(profileId: string | null) {
     const { db, isLoading: isDbLoading } = useDatabase();
@@ -77,24 +83,35 @@ export function useMedications(profileId: string | null) {
     }, [getRepo, profileId]);
 
     const addMedication = async (
-        selectedDrug: DrugConcept,
-        formData: { strength: string; initialCount: string; time: string; }
-    ) => {
+        selectedDrug: MedicationSeed,
+        formData: { strength: string; initialCount: string; scheduleTimes: string[]; gracePeriodMinutes?: number; notificationSound?: string | null; }
+    ): Promise<{ medication: Medication; schedules: Schedule[] } | null> => {
         const repo = getRepo();
         const services = getApiServices();
         if (!repo || !profileId || !services || !db) return null;
+
+        if (!formData.scheduleTimes.length) {
+            logger.warn('Cannot add medication without schedule times.');
+            return null;
+        }
+
+        const initialCountValue = Number.parseInt(formData.initialCount, 10);
+        if (Number.isNaN(initialCountValue)) {
+            logger.warn('Invalid initial count provided for medication.');
+            return null;
+        }
 
         const now = Date.now();
         let newMed: Omit<Medication, 'id'> = {
             profile_id: profileId,
             name: selectedDrug.name,
             strength: formData.strength,
-            initial_count: parseInt(formData.initialCount, 10),
-            current_count: parseInt(formData.initialCount, 10),
+            initial_count: initialCountValue,
+            current_count: initialCountValue,
             is_active: 1,
             created_at: now,
             updated_at: now,
-            rxcui: selectedDrug.rxcui,
+            rxcui: selectedDrug.rxcui ?? null,
             generic_name: selectedDrug.name,
             brand_name: null,
             dosage_form: null,
@@ -102,34 +119,38 @@ export function useMedications(profileId: string | null) {
             notes: null,
         };
 
-        try {
-            logger.log(`Enriching medication data for RXCUI: ${selectedDrug.rxcui}`);
-            const properties = await services.rxNormService.getProperties(selectedDrug.rxcui);
-            if (properties.propertiesGroup?.propConcept) {
-                const brandNameProp = properties.propertiesGroup.propConcept.find((p: RxNormProperty) => p.propName === 'BRAND_NAME');
-                if (brandNameProp) newMed.brand_name = brandNameProp.propValue;
-                
-                const dosageFormProp = properties.propertiesGroup.propConcept.find((p: RxNormProperty) => p.propName === 'DOSAGE_FORM');
-                if (dosageFormProp) newMed.dosage_form = dosageFormProp.propValue;
-            }
+        if (selectedDrug.rxcui) {
+            try {
+                logger.log(`Enriching medication data for RXCUI: ${selectedDrug.rxcui}`);
+                const properties = await services.rxNormService.getProperties(selectedDrug.rxcui);
+                if (properties.propertiesGroup?.propConcept) {
+                    const brandNameProp = properties.propertiesGroup.propConcept.find((p: RxNormProperty) => p.propName === 'BRAND_NAME');
+                    if (brandNameProp) newMed.brand_name = brandNameProp.propValue;
+                    
+                    const dosageFormProp = properties.propertiesGroup.propConcept.find((p: RxNormProperty) => p.propName === 'DOSAGE_FORM');
+                    if (dosageFormProp) newMed.dosage_form = dosageFormProp.propValue;
+                }
 
-            const drugNameToSearchImage = newMed.brand_name || newMed.name;
-            const spls = await services.dailyMedService.getSpls(drugNameToSearchImage);
-            if (spls && spls.data.length > 0) {
-                for (const spl of spls.data) {
-                    const media = await services.dailyMedService.getMedia(spl.setid);
-                    if (media && media.data.length > 0) {
-                        const image = media.data.find(m => m.mimetype.startsWith('image/'));
-                        if (image) {
-                            newMed.image_url = image.url;
-                            break; 
+                const drugNameToSearchImage = newMed.brand_name || newMed.name;
+                const spls = await services.dailyMedService.getSpls(drugNameToSearchImage);
+                if (spls && spls.data.length > 0) {
+                    for (const spl of spls.data) {
+                        const media = await services.dailyMedService.getMedia(spl.setid);
+                        if (media && media.data.length > 0) {
+                            const image = media.data.find(m => m.mimetype.startsWith('image/'));
+                            if (image) {
+                                newMed.image_url = image.url;
+                                break; 
+                            }
                         }
                     }
                 }
+                logger.log('Enrichment complete.');
+            } catch (error) {
+                logger.error('Failed to enrich medication data. Saving basic info anyway.', error);
             }
-            logger.log('Enrichment complete.');
-        } catch (error) {
-            logger.error('Failed to enrich medication data. Saving basic info anyway.', error);
+        } else {
+            logger.log('Manual medication entry detected. Skipping API enrichment.');
         }
 
         const createdMed = await repo.create(newMed as Medication);
@@ -138,18 +159,18 @@ export function useMedications(profileId: string | null) {
         const scheduleRepo = new ScheduleRepository(db);
         const newSchedule: Omit<Schedule, 'id'> = {
             medication_id: createdMed.id,
-            times: [formData.time],
+            times: formData.scheduleTimes,
             days_of_week: null, 
             is_active: 1,
-            grace_period_minutes: 15,
-            notification_sound: null,
+            grace_period_minutes: formData.gracePeriodMinutes ?? 30,
+            notification_sound: formData.notificationSound ?? null,
             created_at: now,
             updated_at: now,
         };
-        await scheduleRepo.create(newSchedule as Schedule);
+        const createdSchedule = await scheduleRepo.create(newSchedule as Schedule);
 
         await loadMedications();
-        return createdMed;
+        return { medication: createdMed, schedules: [createdSchedule] };
     };
     
     const updateMedication = async (medId: string, updates: Partial<Omit<Medication, 'id'>>) => {

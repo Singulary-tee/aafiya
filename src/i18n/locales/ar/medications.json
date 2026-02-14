@@ -27,5 +27,22 @@
   "search_placeholder": "بحث...",
   "search_medications_placeholder": "البحث عن الأدوية...",
   "confirm_medication": "تأكيد الدواء",
-  "search_again": "البحث مرة أخرى"
+  "search_again": "البحث مرة أخرى",
+  "search_mode": "بحث",
+  "manual_mode": "إدخال يدوي",
+  "manual_name_placeholder": "اسم الدواء",
+  "no_search_results": "لا توجد نتائج. جرّب الإدخال اليدوي.",
+  "continue": "متابعة",
+  "schedule_type_label": "الجدول الزمني",
+  "schedule_specific_times": "أوقات محددة",
+  "schedule_interval": "كل عدد من الساعات",
+  "add_time": "إضافة وقت",
+  "remove_time": "إزالة",
+  "interval_hours_placeholder": "كل كم ساعة؟",
+  "interval_start_placeholder": "وقت البدء (مثال: 08:00)",
+  "error_invalid_name": "أدخل اسم دواء صحيح.",
+  "error_invalid_count": "أدخل عدد حبوب صحيح.",
+  "error_invalid_time": "أدخل وقتاً بصيغة HH:MM.",
+  "error_invalid_schedule": "أضف وقتاً واحداً صحيحاً على الأقل.",
+  "error_no_profile": "اختر ملفاً شخصياً قبل إضافة دواء."
 }

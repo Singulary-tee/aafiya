@@ -27,5 +27,22 @@
   "search_placeholder": "Search...",
   "search_medications_placeholder": "Search Medications...",
   "confirm_medication": "Confirm Medication",
-  "search_again": "Search Again"
+  "search_again": "Search Again",
+  "search_mode": "Search",
+  "manual_mode": "Manual",
+  "manual_name_placeholder": "Medication name",
+  "no_search_results": "No results found. Try manual entry.",
+  "continue": "Continue",
+  "schedule_type_label": "Schedule",
+  "schedule_specific_times": "Specific times",
+  "schedule_interval": "Every X hours",
+  "add_time": "Add time",
+  "remove_time": "Remove",
+  "interval_hours_placeholder": "Every how many hours?",
+  "interval_start_placeholder": "Start time (e.g., 08:00)",
+  "error_invalid_name": "Enter a valid medication name.",
+  "error_invalid_count": "Enter a valid pill count.",
+  "error_invalid_time": "Enter a valid time (HH:MM).",
+  "error_invalid_schedule": "Add at least one valid schedule time.",
+  "error_no_profile": "Select a profile before adding a medication."
 }

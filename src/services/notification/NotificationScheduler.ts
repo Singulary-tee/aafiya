@@ -1,14 +1,17 @@
-import * as Notifications from 'expo-notifications';
 import { add, set } from 'date-fns';
+import * as Notifications from 'expo-notifications';
 import { Medication } from '../../database/models/Medication';
 import { Schedule } from '../../database/models/Schedule';
 import { DoseLogRepository } from '../../database/repositories/DoseLogRepository';
-import { logger } from '../../utils/logger';
-import { ProfileRepository } from '../../database/repositories/ProfileRepository';
 import { MedicationRepository } from '../../database/repositories/MedicationRepository';
+import { ProfileRepository } from '../../database/repositories/ProfileRepository';
 import { ScheduleRepository } from '../../database/repositories/ScheduleRepository';
+import { logger } from '../../utils/logger';
+import { requestNotificationPermissions } from './NotificationPermissions';
 
-const DOSE_REMINDER_CATEGORY_ID = 'DOSE_REMINDER';
+const MEDICATION_REMINDER_CATEGORY_ID = 'medication-reminder';
+const ACTION_MARK_AS_TAKEN = 'mark-as-taken';
+const ACTION_SKIP = 'skip';
 
 /**
  * NotificationScheduler
@@ -37,9 +40,9 @@ export class NotificationScheduler {
      * This should be called once when the app starts.
      */
     static async configureNotificationCategories(): Promise<void> {
-        await Notifications.setNotificationCategoryAsync(DOSE_REMINDER_CATEGORY_ID, [
-            { identifier: 'TAKE', buttonTitle: 'Take', options: { opensAppToForeground: true } },
-            { identifier: 'SKIP', buttonTitle: 'Skip', options: { opensAppToForeground: true } },
+        await Notifications.setNotificationCategoryAsync(MEDICATION_REMINDER_CATEGORY_ID, [
+            { identifier: ACTION_MARK_AS_TAKEN, buttonTitle: 'Mark as Taken', options: { opensAppToForeground: true } },
+            { identifier: ACTION_SKIP, buttonTitle: 'Skip', options: { opensAppToForeground: true } },
         ]);
     }
 
@@ -51,6 +54,12 @@ export class NotificationScheduler {
      * @param profileId The ID of the profile the medication belongs to.
      */
     async schedule(medication: Medication, schedules: Schedule[], profileId: string): Promise<void> {
+        const permissionsGranted = await requestNotificationPermissions();
+        if (!permissionsGranted) {
+            logger.warn('Notification permissions not granted. Skipping scheduling.');
+            return;
+        }
+
         await this.cancel(medication.id);
 
         for (const schedule of schedules) {
@@ -68,18 +77,23 @@ export class NotificationScheduler {
                     schedule_id: schedule.id,
                     profile_id: profileId, 
                     scheduled_time: nextDoseTime.getTime(),
-                    status: 'skipped',
+                    status: 'pending',
                     actual_time: null,
                     notes: null,
                 });
 
                 const seconds = (nextDoseTime.getTime() - Date.now()) / 1000;
+                const dosageForm = medication.dosage_form ? ` ${medication.dosage_form}` : '';
+                const strength = medication.strength ? ` ${medication.strength}` : '';
+                const doseDetails = `${dosageForm}${strength}`.trim();
 
                 await Notifications.scheduleNotificationAsync({
                     content: {
                         title: `Time for your ${medication.name}`,
-                        body: `It's time to take your dose of ${medication.dosage_form} ${medication.strength}.`,
-                        categoryIdentifier: DOSE_REMINDER_CATEGORY_ID,
+                        body: doseDetails.length > 0
+                            ? `It's time to take your dose of ${doseDetails}.`
+                            : `It's time to take your dose.`,
+                        categoryIdentifier: MEDICATION_REMINDER_CATEGORY_ID,
                         data: { doseLogId: doseLog.id },
                         sound: true,
                     },

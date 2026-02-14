@@ -140,7 +140,11 @@ Create a privacy-first, offline-capable medication tracking application for Arab
 - No crash reporting to external services
 - No advertising SDKs
 - All data stored locally in SQLite
-- No permissions beyond notifications and storage
+- Only request permissions required for core features:
+  - Notifications (reminders)
+  - Exact alarms on Android 12+ (reliable scheduling)
+  - Camera access for helper-mode QR pairing
+  - Storage access for local images and exports
 
 #### Accessibility
 - Full screen reader support
@@ -195,9 +199,10 @@ The application follows a strict offline-first approach where all core functiona
 
 #### Medication Addition Flow
 ```
-User Input → Search Local DB → Not Found? → Search RxNorm API 
-→ Cache Result → Display → User Confirms → Save to SQLite 
-→ Schedule Notifications → Update UI
+User Input → Search Local DB → Not Found? →
+Offline? → Manual entry + Save to SQLite (option to enrich later)
+Online? → Search RxNorm API → Cache Result → Display → User Confirms →
+Save to SQLite → Schedule Notifications → Update UI
 ```
 
 #### Dose Logging Flow
