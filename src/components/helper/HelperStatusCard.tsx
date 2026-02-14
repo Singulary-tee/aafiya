@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '@/src/constants/colors';
 import { SPACING } from '@/src/constants/spacing';
 import Card from '@/src/components/common/Card';
+import { Text } from '@/src/components/primitives/Text';
 
 type HelperStatus = 'unpaired' | 'pending' | 'paired';
 

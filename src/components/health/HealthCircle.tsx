@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
-import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
+import { Text } from '../primitives/Text';
 
 interface HealthCircleProps {
   score: number;
@@ -58,8 +58,8 @@ const HealthCircle: React.FC<HealthCircleProps> = ({ score, size }) => {
         />
       </Svg>
       <View style={styles.textContainer}>
-        <Text style={[styles.scoreText, { fontSize: size * 0.3 }]}>{`${Math.round(score)}%`}</Text>
-        <Text style={[styles.label, { color }]}>{label}</Text>
+        <Text weight="bold" style={[styles.scoreText, { fontSize: size * 0.3 }]}>{`${Math.round(score)}%`}</Text>
+        <Text size="caption" weight="medium" style={[styles.label, { color }]}>{label}</Text>
       </View>
     </View>
   );
@@ -77,11 +77,8 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     color: NEUTRAL_COLORS.TEXT_PRIMARY,
-    fontWeight: FONT_WEIGHTS.bold as any,
   },
   label: {
-    fontSize: FONT_SIZES.caption,
-    fontWeight: FONT_WEIGHTS.medium as any,
     marginTop: 4,
   },
 });

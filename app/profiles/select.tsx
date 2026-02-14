@@ -23,7 +23,8 @@ export default function SelectProfileScreen() {
 
   const handleSelectProfile = (profile: Profile) => {
     switchProfile(profile.id);
-    router.replace('/(tabs)');
+    // The navigation is handled by the root layout component based on the active profile.
+    // Manually navigating here creates a conflict.
   };
 
   const renderProfile = ({ item }: { item: Profile }) => (

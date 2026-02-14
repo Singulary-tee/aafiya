@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Medication } from '../../database/models/Medication';
 import { COLORS } from '../../constants/colors';
 import { SPACING } from '../../constants/spacing';
-import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import { Text } from '../primitives/Text';
 
 type DoseStatus = 'pending' | 'taken' | 'missed' | 'skipped';
 
@@ -42,9 +42,9 @@ const DoseCard: React.FC<DoseCardProps> = ({ medication, scheduledTime, status, 
       <View style={[styles.statusBar, bar]} />
       <View style={styles.content}>
         <View style={styles.details}>
-          <Text style={styles.time}>{scheduledTime}</Text>
-          <Text style={styles.name}>{medication.name}</Text>
-          <Text style={styles.dosage}>{medication.strength}</Text>
+          <Text size="body" weight="medium" style={styles.time}>{scheduledTime}</Text>
+          <Text size="title" weight="bold" style={styles.name}>{medication.name}</Text>
+          <Text size="caption" style={styles.dosage}>{medication.strength}</Text>
         </View>
         {status === 'pending' ? (
           <View style={styles.actions}>
@@ -52,7 +52,7 @@ const DoseCard: React.FC<DoseCardProps> = ({ medication, scheduledTime, status, 
             <Button title={t('buttons.skip')} onPress={onSkip} variant="secondary" style={styles.button} />
           </View>
         ) : (
-          <Text style={[styles.statusText, text]}>{t(`status.${status}`)}</Text>
+          <Text size="body" weight="bold" style={[styles.statusText, text]}>{t(`status.${status}`)}</Text>
         )}
       </View>
     </Card>
@@ -80,18 +80,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   time: {
-    fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.medium as any,
     color: COLORS.textPrimary,
   },
   name: {
-    fontSize: FONT_SIZES.title,
-    fontWeight: FONT_WEIGHTS.bold as any,
     color: COLORS.textPrimary,
     marginVertical: SPACING.xs,
   },
   dosage: {
-    fontSize: FONT_SIZES.caption,
     color: COLORS.textSecondary,
   },
   actions: {
@@ -100,10 +95,7 @@ const styles = StyleSheet.create({
   button: {
     marginLeft: SPACING.sm,
   },
-  statusText: {
-    fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold as any,
-  },
+  statusText: {},
   takenBar: {
     backgroundColor: COLORS.healthy,
   },

@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
-import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
+import { Text } from '../primitives/Text';
 
 interface StorageCircleProps {
   daysRemaining: number;
@@ -44,7 +44,7 @@ const StorageCircle: React.FC<StorageCircleProps> = ({ daysRemaining, size, onPr
         />
       </Svg>
       <View style={styles.textContainer}>
-        <Text style={[styles.daysText, { fontSize: diameter * 0.4, color }]}>
+        <Text weight="bold" style={[styles.daysText, { fontSize: diameter * 0.4, color }]}>
           {daysRemaining}
         </Text>
       </View>
@@ -62,9 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  daysText: {
-    fontWeight: FONT_WEIGHTS.bold as any,
-  },
+  daysText: {},
 });
 
 export default StorageCircle;

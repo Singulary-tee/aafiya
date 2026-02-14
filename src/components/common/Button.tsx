@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
 import { SPACING } from '../../constants/spacing';
 import { COLORS, NEUTRAL_COLORS } from '../../constants/colors';
+import { Text } from '../primitives/Text';
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 
@@ -50,7 +51,7 @@ const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'primary', st
       style={[styles.button, button, style, disabled && styles.disabledButton]}
       disabled={disabled}
     >
-      <Text style={[styles.text, text, textStyle]}>{t(title)}</Text>
+      <Text weight="bold" size="small" style={[styles.text, text, textStyle]}>{t(title)}</Text>
     </TouchableOpacity>
   );
 };
@@ -65,8 +66,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   text: {
-    fontSize: FONT_SIZES.small,
-    fontWeight: FONT_WEIGHTS.bold as any,
+    // Handled by Text component
   },
   primaryButton: {
     backgroundColor: COLORS.primary,

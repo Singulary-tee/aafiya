@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, I18nManager, DevSettings } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import languageDetector from '../../src/i18n/languageDetector';
+import { FontSwitcher } from '@/src/components/settings/FontSwitcher';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation(['settings']);
@@ -49,6 +50,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      <FontSwitcher />
     </View>
   );
 }
