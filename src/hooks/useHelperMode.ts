@@ -100,7 +100,7 @@ export function useHelperMode(profileId: string) {
             await storeSecureData(storageKey, encryptionKey);
 
             // Confirm pairing - the helper's profile ID and primary user's pairing code
-            const primaryProfileIdResult = await manager.confirmPairing(profileId, pairingCode, 'My Helper');
+            await manager.confirmPairing(profileId, pairingCode, 'My Helper');
             
             const newPairing = await pairingRepo.findByCode(pairingCode);
 
@@ -140,11 +140,14 @@ export function useHelperMode(profileId: string) {
             setHelpers(helpers.filter(h => h.id !== targetPairingId));
             setPatients(patients.filter(p => p.id !== targetPairingId));
             
+            const remainingHelpers = helpers.filter(h => h.id !== targetPairingId);
+            const remainingPatients = patients.filter(p => p.id !== targetPairingId);
+            
             if (pairing?.id === targetPairingId) {
                 setPairing(null);
             }
             
-            setIsPaired(helpers.length > 1 || patients.length > 1);
+            setIsPaired(remainingHelpers.length > 0 || remainingPatients.length > 0);
             setQrCode(null);
             logger.log('Successfully unpaired.');
         } catch (error) {
