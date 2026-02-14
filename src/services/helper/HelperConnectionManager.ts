@@ -88,10 +88,9 @@ export class HelperConnectionManager {
             throw new Error('This pairing code has already been used.');
         }
 
-        // The helperProfileId in this context is the one confirming the pairing,
-        // but the pairing record is associated with the primary user's profile.
-        // We are updating the *existing* record with the helper's name.
+        // Update the pairing record with helper information
         await this.pairingRepository.update(pairingRequest.id, {
+            helper_profile_id: helperProfileId,
             helper_name: helperName,
             status: 'active',
         });

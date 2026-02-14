@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-// import { BarCodeScanner } from 'expo-barcode-scanner'; // This usually needs more setup
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useHelperMode } from '@/src/hooks/useHelperMode';
 import { useProfile } from '@/src/hooks/useProfile';
 import { theme } from '@/src/constants/theme';
@@ -9,37 +9,72 @@ import { Text } from '@/src/components/primitives/Text';
 import Button from '@/src/components/common/Button';
 
 export default function PairHelperScreen() {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const router = useRouter();
   const { activeProfile } = useProfile();
   const { pairWithPrimary } = useHelperMode(activeProfile?.id || '');
 
-  // For a placeholder, we'll just simulate a scan or show a simple UI
-  // Real implementation would use expo-barcode-scanner
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission]);
 
-  const handleSimulateScan = async () => {
-    // Simulated pairing data
-    const simulatedData = JSON.stringify({
-      deviceId: 'simulated-device-id',
-      profileId: 'simulated-profile-id',
-      encryptionKey: 'simulated-key',
-      version: 1,
-      timestamp: Date.now()
-    });
+  const handleBarCodeScanned = async ({ data }: { data: string }) => {
+    if (scanned) return;
     
-    await pairWithPrimary(simulatedData);
-    router.replace('/helper');
+    setScanned(true);
+    
+    try {
+      await pairWithPrimary(data);
+      Alert.alert('Success', 'Successfully paired with patient!', [
+        { text: 'OK', onPress: () => router.replace('/helper') }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pair. Please try again.', [
+        { text: 'OK', onPress: () => setScanned(false) }
+      ]);
+    }
   };
+
+  if (!permission) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading camera...</Text>
+      </View>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Camera Permission Required</Text>
+        <Text style={styles.message}>
+          Camera access is needed to scan the QR code for pairing.
+        </Text>
+        <Button title="Grant Permission" onPress={requestPermission} />
+        <Button title="Cancel" onPress={() => router.back()} variant="tertiary" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Scan Pairing QR Code</Text>
-      <View style={styles.scannerPlaceholder}>
-        <Text>Camera View Finder Placeholder</Text>
+      <View style={styles.cameraContainer}>
+        <CameraView
+          style={styles.camera}
+          facing="back"
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr'],
+          }}
+        />
       </View>
-      
-      <Button title="Simulate Successful Scan" onPress={handleSimulateScan} />
+      <Text style={styles.instructions}>
+        Point your camera at the QR code displayed on the patient's device
+      </Text>
       <Button title="Cancel" onPress={() => router.back()} variant="tertiary" />
     </View>
   );
@@ -58,14 +93,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: theme.spacing.lg,
   },
-  scannerPlaceholder: {
-    width: 250,
-    height: 250,
-    backgroundColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
+  message: {
+    textAlign: 'center',
     marginBottom: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    paddingHorizontal: theme.spacing.md,
+  },
+  cameraContainer: {
+    width: 300,
+    height: 300,
+    borderRadius: theme.spacing.sm,
+    overflow: 'hidden',
+    marginBottom: theme.spacing.md,
+  },
+  camera: {
+    flex: 1,
+  },
+  instructions: {
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+    color: theme.colors.textSecondary,
   }
 });
