@@ -3,6 +3,9 @@ import * as TaskManager from 'expo-task-manager';
 import { openDatabase } from '../../database';
 import { DoseLogRepository } from '../../database/repositories/DoseLogRepository';
 import { ScheduleRepository } from '../../database/repositories/ScheduleRepository';
+import { HelperPairingRepository } from '../../database/repositories/HelperPairingRepository';
+import { ProfileRepository } from '../../database/repositories/ProfileRepository';
+import { MedicationRepository } from '../../database/repositories/MedicationRepository';
 import { logger } from '../../utils/logger';
 import { MissedDoseDetector } from './MissedDoseDetector';
 
@@ -13,7 +16,10 @@ TaskManager.defineTask(MISSED_DOSE_TASK, async () => {
     const db = await openDatabase();
     const detector = new MissedDoseDetector(
       new DoseLogRepository(db),
-      new ScheduleRepository(db)
+      new ScheduleRepository(db),
+      new HelperPairingRepository(db),
+      new ProfileRepository(db),
+      new MedicationRepository(db)
     );
 
     await detector.detect();
