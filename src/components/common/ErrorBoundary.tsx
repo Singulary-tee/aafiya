@@ -1,9 +1,8 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
-import { FONT_SIZES } from '../../constants/typography';
+import { View, StyleSheet } from 'react-native';
+import { theme } from '../../constants/theme';
+import { Text } from '../primitives/Text';
 
 interface Props {
   children: ReactNode;
@@ -30,8 +29,8 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Text style={styles.title}>Something went wrong.</Text>
-          <Text style={styles.message}>Please restart the app.</Text>
+          <Text size="title" style={styles.title}>Something went wrong.</Text>
+          <Text size="body" style={styles.message}>Please restart the app.</Text>
         </View>
       );
     }
@@ -45,17 +44,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
-    padding: SPACING.lg,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.lg,
   },
   title: {
-    fontSize: FONT_SIZES.title,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.md,
   },
   message: {
-    fontSize: FONT_SIZES.body,
-    color: COLORS.textSecondary,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 });

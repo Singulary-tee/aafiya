@@ -1,10 +1,7 @@
 {
   "settings": "Settings",
   "language": "Language",
-  "theme": "Theme",
-  "notifications": "Notifications",
-  "profiles": "Profiles",
-  "about": "About",
   "english": "English",
-  "arabic": "العربية"
+  "arabic": "Arabic",
+  "use_custom_fonts": "Use Custom Fonts"
 }

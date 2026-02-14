@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
 import { Medication } from '@/src/database/models/Medication';
-import { COLORS } from '@/src/constants/colors';
 import { useTranslation } from 'react-i18next';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import Button from '@/src/components/common/Button';
 
 export default function MedicationDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -43,7 +45,7 @@ export default function MedicationDetailScreen() {
       
       <View style={styles.buttonContainer}>
         <Button title={t('edit')} onPress={() => router.push(`/medications/edit/${id}`)} />
-        <Button title={t('delete')} onPress={handleDelete} color="red" />
+        <Button title={t('delete')} onPress={handleDelete} color={theme.colors.danger} />
       </View>
     </View>
   );
@@ -52,25 +54,25 @@ export default function MedicationDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.background,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   name: {
-    fontSize: 24,
+    fontSize: theme.fontSizes.title,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   strength: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 16,
+    fontSize: theme.fontSizes.subheading,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.md,
   },
   count: {
-    fontSize: 16,
-    marginBottom: 8,
+    fontSize: theme.fontSizes.body,
+    marginBottom: theme.spacing.sm,
   },
   buttonContainer: {
-    marginTop: 24,
+    marginTop: theme.spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-around',
   },

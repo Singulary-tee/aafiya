@@ -1,10 +1,7 @@
 {
   "settings": "الإعدادات",
   "language": "اللغة",
-  "theme": "المظهر",
-  "notifications": "الإشعارات",
-  "profiles": "الملفات الشخصية",
-  "about": "حول",
-  "english": "English",
-  "arabic": "العربية"
+  "english": "الإنجليزية",
+  "arabic": "العربية",
+  "use_custom_fonts": "استخدام الخطوط المخصصة"
 }

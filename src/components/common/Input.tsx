@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { TextInput, StyleSheet, View, Text, TextInputProps } from 'react-native';
+import { StyleSheet, View, TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
-import { FONT_SIZES } from '../../constants/typography';
+import { theme } from '../../constants/theme';
+import { Text } from '../primitives/Text';
+import { TextInput } from '../primitives/TextInput';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -16,42 +16,40 @@ const Input: React.FC<InputProps> = ({ label, error, ...props }) => {
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{t(label)}</Text>}
+      {label && <Text size="body" style={styles.label}>{t(label)}</Text>}
       <TextInput
+        size="body"
         style={[styles.input, !!error && styles.inputError]}
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor={theme.colors.textSecondary} // Updated from theme
         {...props}
       />
-      {error && <Text style={styles.errorText}>{t(error)}</Text>}
+      {error && <Text size="caption" style={styles.errorText}>{t(error)}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: SPACING.md,
+    marginBottom: theme.spacing.md,
   },
   label: {
-    marginBottom: SPACING.sm,
-    fontSize: FONT_SIZES.body,
-    color: COLORS.textPrimary,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.textPrimary,
   },
   input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 8,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.body,
-    color: COLORS.textPrimary,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+    color: theme.colors.textPrimary,
     borderWidth: 1,
-    borderColor: COLORS.divider,
+    borderColor: theme.colors.divider, // Updated from theme
   },
   inputError: {
-    borderColor: COLORS.critical,
+    borderColor: theme.colors.critical,
   },
   errorText: {
-    marginTop: SPACING.sm,
-    fontSize: FONT_SIZES.caption,
-    color: COLORS.critical,
+    marginTop: theme.spacing.sm,
+    color: theme.colors.critical,
   },
 });
 

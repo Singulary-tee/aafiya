@@ -1,12 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
 import { Medication } from '@/src/database/models/Medication';
-import { COLORS } from '@/src/constants/colors';
 import { useTranslation } from 'react-i18next';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import { TextInput } from '@/src/components/primitives/TextInput';
+import Button from '@/src/components/common/Button';
 
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams();
@@ -77,8 +80,8 @@ export default function EditMedicationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.background,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   centered: {
     flex: 1,
@@ -86,14 +89,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontSize: 16,
-    marginBottom: 8,
+    fontSize: theme.fontSizes.body,
+    marginBottom: theme.spacing.sm,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    marginBottom: theme.spacing.md,
   },
 });

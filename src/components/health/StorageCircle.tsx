@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
-import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
+import { theme } from '../../constants/theme';
+import { Text } from '../primitives/Text';
 
 interface StorageCircleProps {
   daysRemaining: number;
@@ -18,15 +18,15 @@ const StorageCircle: React.FC<StorageCircleProps> = ({ daysRemaining, size, onPr
 
   const getColor = () => {
     if (daysRemaining >= 14) {
-      return HEALTH_CIRCLE_COLORS.HEALTHY;
+      return theme.colors.healthy;
     }
     if (daysRemaining >= 7) {
-      return HEALTH_CIRCLE_COLORS.ATTENTION;
+      return theme.colors.attention;
     }
     if (daysRemaining > 0) {
-      return HEALTH_CIRCLE_COLORS.CRITICAL;
+      return theme.colors.critical;
     }
-    return NEUTRAL_COLORS.DIVIDER;
+    return theme.colors.divider;
   };
 
   const color = getColor();
@@ -44,7 +44,7 @@ const StorageCircle: React.FC<StorageCircleProps> = ({ daysRemaining, size, onPr
         />
       </Svg>
       <View style={styles.textContainer}>
-        <Text style={[styles.daysText, { fontSize: diameter * 0.4, color }]}>
+        <Text weight="bold" style={[styles.daysText, { fontSize: diameter * 0.4, color }]}>
           {daysRemaining}
         </Text>
       </View>
@@ -62,9 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  daysText: {
-    fontWeight: FONT_WEIGHTS.bold as any,
-  },
+  daysText: {},
 });
 
 export default StorageCircle;

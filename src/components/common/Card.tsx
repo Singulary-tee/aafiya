@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { View, StyleSheet, ViewProps } from 'react-native';
-import { COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
+import { theme } from '../../constants/theme';
 
 const Card: React.FC<ViewProps> = ({ style, ...props }) => {
   return <View style={[styles.card, style]} {...props} />;
@@ -10,14 +9,10 @@ const Card: React.FC<ViewProps> = ({ style, ...props }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 8,
-    padding: SPACING.md,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.lg, // Cards often have a larger radius
+    padding: theme.spacing.md,
+    ...theme.shadows.subtle, // Applying a pre-defined shadow style
   },
 });
 

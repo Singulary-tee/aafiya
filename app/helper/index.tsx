@@ -1,11 +1,13 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Button, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useHelperMode } from '@/src/hooks/useHelperMode';
 import { HelperStatusCard } from '@/src/components/helper/HelperStatusCard';
-import { COLORS } from '@/src/constants/colors';
 import { useProfile } from '@/src/hooks/useProfile';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import Button from '@/src/components/common/Button';
 
 export default function HelperModeScreen() {
   const router = useRouter();
@@ -41,28 +43,28 @@ export default function HelperModeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.background,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   title: {
-    fontSize: 24,
+    fontSize: theme.fontSizes.title,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: theme.fontSizes.subheading,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#666',
-    marginTop: 16,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.md,
   },
   buttonContainer: {
-    marginTop: 16,
+    marginTop: theme.spacing.md,
   },
 });

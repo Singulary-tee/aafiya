@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useProfile } from '@/src/hooks/useProfile';
 import { logger } from '@/src/utils/logger';
@@ -15,6 +15,10 @@ import { RxNormService } from '@/src/services/api/RxNormService';
 import { ApiCacheRepository } from '@/src/database/repositories/ApiCacheRepository';
 import { DrugConcept } from '@/src/types/api';
 import { useDatabase } from '@/src/hooks/useDatabase';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import Button from '@/src/components/common/Button';
+import { TextInput } from '@/src/components/primitives/TextInput';
 
 export default function AddMedicationScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -138,32 +142,19 @@ export default function AddMedicationScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      padding: 16,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      marginBottom: 24,
-    },
-    input: {
-      height: 40,
-      borderColor: 'gray',
-      borderWidth: 1,
-      marginBottom: 16,
-      paddingHorizontal: 8,
-    },
-    resultItem: {
-        padding: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    selectedDrugName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 16,
-    }
-  });
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+  },
+  title: {
+    fontSize: theme.fontSizes.title,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  input: {
+    marginBottom: theme.spacing.md,
+  },
+});

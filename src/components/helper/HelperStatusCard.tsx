@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '@/src/constants/colors';
-import { SPACING } from '@/src/constants/spacing';
+import { theme } from '@/src/constants/theme';
 import Card from '@/src/components/common/Card';
+import { Text } from '@/src/components/primitives/Text';
 
 type HelperStatus = 'unpaired' | 'pending' | 'paired';
 
@@ -18,15 +18,15 @@ export function HelperStatusCard({ status }: HelperStatusCardProps) {
   const statusConfig = {
     unpaired: {
       text: t('status_unpaired'),
-      color: COLORS.textSecondary,
+      color: theme.colors.textSecondary,
     },
     pending: {
       text: t('status_pending'),
-      color: COLORS.attention,
+      color: theme.colors.attention,
     },
     paired: {
       text: t('status_paired'),
-      color: COLORS.healthy,
+      color: theme.colors.healthy,
     },
   };
 
@@ -44,12 +44,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    padding: theme.spacing.md,
   },
   statusIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: SPACING.sm,
+    marginRight: theme.spacing.sm,
   },
 });

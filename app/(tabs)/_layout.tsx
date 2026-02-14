@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
-import { COLORS } from '@/src/constants/colors';
+import { theme } from '@/src/constants/theme';
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -12,7 +12,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary,
+        tabBarActiveTintColor: theme.colors.primary,
         headerShown: false,
       }}>
       <Tabs.Screen
