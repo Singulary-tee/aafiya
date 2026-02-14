@@ -77,20 +77,25 @@ const applyMigrations = async (db: SQLite.SQLiteDatabase) => {
                 -- Table: dose_log
                 CREATE TABLE IF NOT EXISTS dose_log (
                     id TEXT PRIMARY KEY,
-                    medication_id TEXT NOT NULL,
                     schedule_id TEXT NOT NULL,
+                    medication_id TEXT NOT NULL,
+                    profile_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
                     scheduled_time INTEGER NOT NULL,
                     actual_time INTEGER,
-                    status TEXT NOT NULL, -- 'taken', 'missed', 'skipped'
                     notes TEXT,
+                    is_auto_marked_missed INTEGER DEFAULT 0,
                     created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
                     FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE CASCADE,
-                    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
+                    FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
                 );
+                CREATE INDEX IF NOT EXISTS idx_dose_log_schedule ON dose_log(schedule_id);
                 CREATE INDEX IF NOT EXISTS idx_dose_log_medication ON dose_log(medication_id);
-                CREATE INDEX IF NOT EXISTS idx_dose_log_scheduled_time ON dose_log(scheduled_time);
+                CREATE INDEX IF NOT EXISTS idx_dose_log_profile ON dose_log(profile_id);
                 CREATE INDEX IF NOT EXISTS idx_dose_log_status ON dose_log(status);
-                CREATE INDEX IF NOT EXISTS idx_dose_log_created ON dose_log(created_at);
+                CREATE INDEX IF NOT EXISTS idx_dose_log_time ON dose_log(scheduled_time);
 
                 -- Table: health_metrics
                 CREATE TABLE IF NOT EXISTS health_metrics (

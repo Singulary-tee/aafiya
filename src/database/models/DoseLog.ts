@@ -29,4 +29,7 @@ export interface DoseLog {
 
     /** The timestamp when this log was created. */
     created_at: number;
+
+    /** The timestamp when this log was last updated. */
+    updated_at: number;
 }

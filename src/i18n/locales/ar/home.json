@@ -9,7 +9,13 @@
   "recent_activity": "النشاط الأخير",
   "automatically_logged_as_missed": "تم تسجيله تلقائيًا على أنه فائت",
   "todays_doses": "جرعات اليوم",
-  "healthStatus": "الحالة الصحية",
+  "healthStatus": {
+    "title": "الحالة الصحية",
+    "healthy": "صحي",
+    "attention": "انتباه",
+    "risk": "خطر",
+    "critical": "حرج"
+  },
   "storage_levels": "مستويات التخزين",
   "add_new_medication": "إضافة دواء جديد"
 }

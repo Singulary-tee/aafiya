@@ -5,12 +5,12 @@ import { DoseLog } from '../models/DoseLog';
 /**
  * Data required to create a new dose log entry.
  */
-export type DoseLogData = Omit<DoseLog, 'id' | 'created_at'>;
+export type DoseLogData = Omit<DoseLog, 'id' | 'created_at' | 'updated_at'>;
 
 /**
  * Data that can be updated on an existing dose log.
  */
-export type DoseLogUpdate = Partial<Omit<DoseLog, 'id' | 'medication_id' | 'schedule_id' | 'created_at'>>;
+export type DoseLogUpdate = Partial<Omit<DoseLog, 'id' | 'medication_id' | 'schedule_id' | 'created_at' | 'updated_at'>>;
 
 export class DoseLogRepository {
     private db: SQLiteDatabase;
@@ -25,6 +25,10 @@ export class DoseLogRepository {
      * @returns The newly created dose log object.
      */
     async create(data: DoseLogData): Promise<DoseLog> {
+        if (!data.profile_id) {
+            throw new Error('Profile ID is required to create a dose log.');
+        }
+
         const now = Date.now();
         const newLog: DoseLog = {
             id: generateUUID(),
@@ -36,12 +40,13 @@ export class DoseLogRepository {
             status: data.status,
             notes: data.notes ?? null,
             created_at: now,
+            updated_at: now,
         };
 
         await this.db.runAsync(
-            `INSERT INTO dose_log (id, profile_id, medication_id, schedule_id, scheduled_time, actual_time, status, notes, created_at) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-            [newLog.id, newLog.profile_id, newLog.medication_id, newLog.schedule_id, newLog.scheduled_time, newLog.actual_time, newLog.status, newLog.notes, newLog.created_at]
+            `INSERT INTO dose_log (id, profile_id, medication_id, schedule_id, scheduled_time, actual_time, status, notes, created_at, updated_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [newLog.id, newLog.profile_id, newLog.medication_id, newLog.schedule_id, newLog.scheduled_time, newLog.actual_time, newLog.status, newLog.notes, newLog.created_at, newLog.updated_at]
         );
         return newLog;
     }
@@ -104,11 +109,10 @@ export class DoseLogRepository {
      */
     async findByProfileIdAndDateRange(profileId: string, startTimestamp: number, endTimestamp: number): Promise<DoseLog[]> {
         return await this.db.getAllAsync<DoseLog>(
-            `SELECT dl.* 
-             FROM dose_log dl
-             JOIN medications m ON dl.medication_id = m.id
-             WHERE m.profile_id = ? AND dl.scheduled_time BETWEEN ? AND ?
-             ORDER BY dl.scheduled_time ASC`,
+            `SELECT * 
+             FROM dose_log
+             WHERE profile_id = ? AND scheduled_time BETWEEN ? AND ?
+             ORDER BY scheduled_time ASC`,
             [profileId, startTimestamp, endTimestamp]
         );
     }
@@ -125,14 +129,15 @@ export class DoseLogRepository {
             throw new Error('DoseLog not found');
         }
 
+        const now = Date.now();
         const fieldsToUpdate = Object.keys(data);
-        if (fieldsToUpdate.length === 0) return existing;
+        if (fieldsToUpdate.length === 0) return existing; 
 
-        const setClause = fieldsToUpdate.map(key => `${key} = ?`).join(', ');
-        const values = fieldsToUpdate.map(key => {
+        const setClause = [...fieldsToUpdate.map(key => `${key} = ?`), 'updated_at = ?'].join(', ');
+        const values = [...fieldsToUpdate.map(key => {
             const value = data[key as keyof DoseLogUpdate];
             return value === undefined ? null : value;
-        });
+        }), now];
 
         await this.db.runAsync(
             `UPDATE dose_log SET ${setClause} WHERE id = ?`,

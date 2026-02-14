@@ -1,5 +1,5 @@
 import { useDatabase } from "./useDatabase";
-import { DoseLogRepository } from "../database/repositories/DoseLogRepository";
+import { DoseLogRepository, DoseLogData } from "../database/repositories/DoseLogRepository";
 import { DoseLog } from "../database/models/DoseLog";
 import { useState, useEffect, useCallback, useMemo } from "react";
 
@@ -30,9 +30,9 @@ export function useDoses(medicationId: string) {
         }
     }, [isLoading, loadDoses]);
 
-    const logDose = async (dose: Omit<DoseLog, 'id'>) => {
+    const logDose = async (dose: DoseLogData) => {
         if (doseLogRepository) {
-            await doseLogRepository.create(dose as DoseLog);
+            await doseLogRepository.create(dose);
             loadDoses();
         }
     };

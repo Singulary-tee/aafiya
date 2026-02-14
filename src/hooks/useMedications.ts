@@ -7,6 +7,14 @@ import { DataSyncService, Repository } from "../services/sync/DataSyncService";
 import { ConflictResolver } from "../services/sync/ConflictResolver";
 import { getData, storeData } from "../utils/storage";
 import { logger } from "../utils/logger";
+import { ScheduleRepository } from "../database/repositories/ScheduleRepository";
+import { Schedule } from "../database/models/Schedule";
+import { DrugConcept } from "../types/api";
+
+// API Imports
+import { RxNormService } from '../services/api/RxNormService';
+import { DailyMedService } from '../services/api/DailyMedService';
+import { ApiCacheRepository } from '../database/repositories/ApiCacheRepository';
 
 const LAST_SYNC_KEY = 'last_medication_sync';
 
@@ -52,6 +60,15 @@ export function useMedications(profileId: string | null) {
         return new MedicationRepository(db);
     }, [db]);
 
+    const getApiServices = useCallback(() => {
+        if (!db) return null;
+        const apiCacheRepo = new ApiCacheRepository(db);
+        return {
+            rxNormService: new RxNormService(apiCacheRepo),
+            dailyMedService: new DailyMedService(apiCacheRepo),
+        };
+    }, [db]);
+
     const loadMedications = useCallback(async () => {
         const repo = getRepo();
         if (!repo || !profileId) return;
@@ -59,22 +76,80 @@ export function useMedications(profileId: string | null) {
         setMedications(meds);
     }, [getRepo, profileId]);
 
-    const addMedication = async (medData: Pick<Medication, 'name' | 'strength' | 'initial_count'>) => {
+    const addMedication = async (
+        selectedDrug: DrugConcept,
+        formData: { strength: string; initialCount: string; time: string; }
+    ) => {
         const repo = getRepo();
-        if (!repo || !profileId) return;
+        const services = getApiServices();
+        if (!repo || !profileId || !services || !db) return null;
 
         const now = Date.now();
-        const newMed: Omit<Medication, 'id'> = {
-            ...medData,
+        let newMed: Omit<Medication, 'id'> = {
             profile_id: profileId,
-            current_count: medData.initial_count,
+            name: selectedDrug.name,
+            strength: formData.strength,
+            initial_count: parseInt(formData.initialCount, 10),
+            current_count: parseInt(formData.initialCount, 10),
             is_active: 1,
             created_at: now,
             updated_at: now,
+            rxcui: selectedDrug.rxcui,
+            generic_name: selectedDrug.name,
+            brand_name: null,
+            dosage_form: null,
+            image_url: null,
+            notes: null,
         };
-        await repo.create(newMed as Medication);
-        logger.log(`Added new medication: ${medData.name}`);
+
+        try {
+            logger.log(`Enriching medication data for RXCUI: ${selectedDrug.rxcui}`);
+            const properties = await services.rxNormService.getProperties(selectedDrug.rxcui);
+            if (properties) {
+                const brandNameProp = properties.find(p => p.propName === 'BRAND_NAME');
+                if (brandNameProp) newMed.brand_name = brandNameProp.propValue;
+                
+                const dosageFormProp = properties.find(p => p.propName === 'DOSAGE_FORM');
+                if (dosageFormProp) newMed.dosage_form = dosageFormProp.propValue;
+            }
+
+            const drugNameToSearchImage = newMed.brand_name || newMed.name;
+            const spls = await services.dailyMedService.searchSPLs(drugNameToSearchImage);
+            if (spls && spls.data.length > 0) {
+                for (const spl of spls.data) {
+                    const media = await services.dailyMedService.getMedia(spl.setid);
+                    if (media && media.data.length > 0) {
+                        const image = media.data.find(m => m.mime_type.startsWith('image/'));
+                        if (image) {
+                            newMed.image_url = image.url;
+                            break; 
+                        }
+                    }
+                }
+            }
+            logger.log('Enrichment complete.');
+        } catch (error) {
+            logger.error('Failed to enrich medication data. Saving basic info anyway.', error);
+        }
+
+        const createdMed = await repo.create(newMed as Medication);
+        logger.log(`Added new medication: ${newMed.name}`);
+
+        const scheduleRepo = new ScheduleRepository(db);
+        const newSchedule: Omit<Schedule, 'id'> = {
+            medication_id: createdMed.id,
+            times: [formData.time],
+            days_of_week: null, 
+            is_active: 1,
+            grace_period_minutes: 15,
+            notification_sound: null,
+            created_at: now,
+            updated_at: now,
+        };
+        await scheduleRepo.create(newSchedule as Schedule);
+
         await loadMedications();
+        return createdMed;
     };
     
     const updateMedication = async (medId: string, updates: Partial<Omit<Medication, 'id'>>) => {

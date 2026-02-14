@@ -24,15 +24,17 @@ const AppLayout = () => {
     if (isProfileLoading || !isI18nInitialized) return;
 
     const inTabsGroup = segments[0] === '(tabs)';
-    const currentRoute = segments.join('/');
-    const protectedRoutes = ['medications/add']; // Routes accessible only when logged in
+    const onAuthScreens = segments[0] === 'profiles';
 
-    if (activeProfile && !inTabsGroup && !protectedRoutes.includes(currentRoute)) {
-      router.replace('/(tabs)');
-    } else if (!activeProfile && inTabsGroup) {
-      router.replace('/profiles/select');
+    // If the user has an active profile but is on an auth screen, redirect them to the main app.
+    if (activeProfile && onAuthScreens) {
+        router.replace('/(tabs)');
+    } 
+    // If the user does NOT have an active profile and is not on an auth screen, redirect them to the profile selection.
+    else if (!activeProfile && !onAuthScreens) {
+        router.replace('/profiles/select');
     }
-  }, [activeProfile, isProfileLoading, isI18nInitialized, segments, router]);
+  }, [activeProfile, isProfileLoading, isI18nInitialized, segments]);
 
   if (isProfileLoading || !isI18nInitialized) {
     return <ActivityIndicator style={{ flex: 1, justifyContent: 'center' }} />;

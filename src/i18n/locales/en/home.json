@@ -9,7 +9,13 @@
   "recent_activity": "Recent Activity",
   "automatically_logged_as_missed": "Automatically logged as missed",
   "todays_doses": "Today's Doses",
-  "healthStatus": "Health Status",
+  "healthStatus": {
+    "title": "Health Status",
+    "healthy": "Healthy",
+    "attention": "Attention",
+    "risk": "Risk",
+    "critical": "Critical"
+  },
   "storage_levels": "Storage Levels",
   "add_new_medication": "Add New Medication"
 }

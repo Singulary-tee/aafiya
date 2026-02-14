@@ -1,15 +1,16 @@
 
 import React from 'react';
-import { View, StyleSheet, Text, ViewStyle, TextStyle, ImageStyle } from 'react-native';
+import { View, StyleSheet, Text, ViewStyle, TextStyle, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { FONT_WEIGHTS } from '@/src/constants/typography';
 
 interface ProfileAvatarProps {
   name: string;
   color: string;
   size?: 'small' | 'medium' | 'large';
+  onPress?: (event: GestureResponderEvent) => void;
 }
 
-export function ProfileAvatar({ name, color, size = 'medium' }: ProfileAvatarProps) {
+export function ProfileAvatar({ name, color, size = 'medium', onPress }: ProfileAvatarProps) {
   const firstLetter = name.charAt(0).toUpperCase();
   const avatarSize = size === 'large' ? 80 : size === 'medium' ? 50 : 30;
 
@@ -29,8 +30,8 @@ export function ProfileAvatar({ name, color, size = 'medium' }: ProfileAvatarPro
   };
 
   return (
-    <View style={avatarStyle}>
+    <TouchableOpacity onPress={onPress} style={avatarStyle}>
       <Text style={letterStyle}>{firstLetter}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }

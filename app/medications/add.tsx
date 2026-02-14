@@ -1,133 +1,169 @@
 
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useDatabase } from '@/src/hooks/useDatabase';
 import { useProfile } from '@/src/hooks/useProfile';
-import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
-import { ScheduleRepository } from '@/src/database/repositories/ScheduleRepository';
-import { Medication } from '@/src/database/models/Medication';
-import { Schedule } from '@/src/database/models/Schedule';
 import { logger } from '@/src/utils/logger';
 import { useTranslation } from 'react-i18next';
+import { debounce } from 'lodash';
+
+// Hook Import
+import { useMedications } from '@/src/hooks/useMedications';
+
+// API Imports
+import { RxNormService } from '@/src/services/api/RxNormService';
+import { ApiCacheRepository } from '@/src/database/repositories/ApiCacheRepository';
+import { DrugConcept } from '@/src/types/api';
+import { useDatabase } from '@/src/hooks/useDatabase';
 
 export default function AddMedicationScreen() {
-  const [name, setName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<DrugConcept[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedDrug, setSelectedDrug] = useState<DrugConcept | null>(null);
+
+  // Form states
   const [strength, setStrength] = useState('');
   const [initialCount, setInitialCount] = useState('');
-  const [time, setTime] = useState('09:00'); // Simplified to one time
+  const [time, setTime] = useState('09:00');
 
-  const { db, isLoading: isDbLoading } = useDatabase();
   const router = useRouter();
   const { activeProfile } = useProfile();
+  const { db, isLoading: isDbLoading } = useDatabase();
   const { t } = useTranslation(['medications']);
 
-  const handleAddMedication = async () => {
-    logger.log('Attempting to add medication...');
-    if (!db || !activeProfile || !name.trim() || !initialCount.trim() || !time.trim()) {
-      logger.error('Validation failed', { hasDb: !!db, hasProfile: !!activeProfile, name, initialCount, time });
-      return;
-    }
+  // Use the new and improved hook
+  const { addMedication, isLoading: isAddingMedication } = useMedications(activeProfile?.id || null);
 
-    try {
-      const medicationRepo = new MedicationRepository(db);
-      const scheduleRepo = new ScheduleRepository(db);
-
-      const newMedication: Omit<Medication, 'id' | 'created_at' | 'updated_at'> = {
-        profile_id: activeProfile.id,
-        name,
-        strength,
-        initial_count: parseInt(initialCount, 10),
-        current_count: parseInt(initialCount, 10),
-        is_active: 1,
-        rxcui: null,
-        generic_name: null,
-        brand_name: null,
-        dosage_form: null,
-        image_url: null,
-        notes: null,
-      };
-
-      logger.log('Creating medication:', newMedication);
-      const createdMedication = await medicationRepo.create(newMedication);
-      logger.log('Created medication:', createdMedication);
-
-
-      if (!createdMedication || !createdMedication.id) {
-        logger.error('Medication creation failed, returned medication is invalid.', createdMedication);
+  const debouncedSearch = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 3 || !db) {
+        setSearchResults([]);
         return;
       }
+      setIsSearching(true);
+      try {
+        const apiCacheRepo = new ApiCacheRepository(db);
+        const rxNormService = new RxNormService(apiCacheRepo);
+        const results = await rxNormService.searchDrugsByName(query);
+        setSearchResults(results?.drugGroup.conceptGroup?.flatMap(cg => cg.conceptProperties) || []);
+      } catch (error) {
+        logger.error('Failed to search for medications:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500),
+    [db]
+  );
 
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+  }, [searchQuery, debouncedSearch]);
 
-      const newSchedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at'> = {
-        medication_id: createdMedication.id,
-        times: [time],
-        days_of_week: null, // For simplicity, daily
-        grace_period_minutes: 15,
-        is_active: 1,
-        notification_sound: null,
-      };
+  const handleSelectDrug = (drug: DrugConcept) => {
+    setSelectedDrug(drug);
+    setSearchQuery(drug.name);
+    setSearchResults([]);
+  };
 
-      logger.log('Creating schedule:', newSchedule);
-      await scheduleRepo.create(newSchedule as Schedule);
-      logger.log('Schedule created');
+  const handleAddMedication = async () => {
+    if (!selectedDrug) return;
 
+    const medicationData = { strength, initialCount, time };
+    
+    const result = await addMedication(selectedDrug, medicationData);
+
+    if (result) {
       router.replace('/(tabs)/medications');
-    } catch (error) {
-      logger.error('Error adding medication:', error);
     }
   };
 
+  const renderSearchResult = ({ item }: { item: DrugConcept }) => (
+    <TouchableOpacity style={styles.resultItem} onPress={() => handleSelectDrug(item)}>
+      <Text>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('add_medication_title')}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder={t('medication_name_placeholder')}
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t('strength_placeholder')}
-        value={strength}
-        onChangeText={setStrength}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t('initial_count_placeholder')}
-        value={initialCount}
-        onChangeText={setInitialCount}
-        keyboardType="numeric"
-      />
-       <TextInput
-        style={styles.input}
-        placeholder={t('time_placeholder')}
-        value={time}
-        onChangeText={setTime}
-      />
-      <Button title={t('add_medication')} onPress={handleAddMedication} disabled={isDbLoading} />
+      {!selectedDrug ? (
+        <>
+          <Text style={styles.title}>{t('add_medication_title')}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t('medication_name_placeholder')}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {isSearching && <ActivityIndicator />}
+          <FlatList
+            data={searchResults}
+            renderItem={renderSearchResult}
+            keyExtractor={(item) => item.rxcui}
+          />
+        </>
+      ) : (
+        <>
+          <Text style={styles.title}>{t('confirm_medication', 'Confirm Medication')}</Text>
+          <Text style={styles.selectedDrugName}>{selectedDrug.name}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t('strength_placeholder')}
+            value={strength}
+            onChangeText={setStrength}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder={t('initial_count_placeholder')}
+            value={initialCount}
+            onChangeText={setInitialCount}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder={t('time_placeholder')}
+            value={time}
+            onChangeText={setTime}
+          />
+          <Button title={t('add_medication')} onPress={handleAddMedication} disabled={isDbLoading || isAddingMedication} />
+          <Button title={t('search_again', 'Search Again')} onPress={() => {
+              setSelectedDrug(null);
+              setSearchQuery('');
+          }} />
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 16,
-    paddingHorizontal: 8,
-  },
-});
+    container: {
+      flex: 1,
+      padding: 16,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 24,
+    },
+    input: {
+      height: 40,
+      borderColor: 'gray',
+      borderWidth: 1,
+      marginBottom: 16,
+      paddingHorizontal: 8,
+    },
+    resultItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    selectedDrugName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 16,
+    }
+  });
