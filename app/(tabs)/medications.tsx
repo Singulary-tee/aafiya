@@ -29,7 +29,7 @@ export default function MedicationsScreen() {
         style={styles.list}
       />
       <Button
-        title={t('add_new_medication')}
+        title={t('add_medication')}
         onPress={() => router.push('/medications/add')}
       />
     </View>

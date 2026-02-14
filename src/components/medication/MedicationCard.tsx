@@ -18,7 +18,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({ medication }) => {
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
-        <PillImage imageUrl={medication.image_url || ''} size={80} />
+        <PillImage imageUrl={medication.image_url} size={80} />
         <View style={styles.headerText}>
           <Text size="title" weight="bold">{medication.name}</Text>
           <Text size="body" style={styles.strength}>{medication.strength}</Text>

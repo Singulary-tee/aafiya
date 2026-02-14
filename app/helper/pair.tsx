@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -41,7 +40,7 @@ export default function PairHelperScreen() {
       </View>
       
       <Button title="Simulate Successful Scan" onPress={handleSimulateScan} />
-      <Button title="Cancel" onPress={() => router.back()} color="danger" />
+      <Button title="Cancel" onPress={() => router.back()} variant="tertiary" />
     </View>
   );
 }

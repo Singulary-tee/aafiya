@@ -5,9 +5,9 @@
 // --- RxNorm API ---
 
 /**
- * A single concept property from the RxNorm API.
+ * A single drug concept from the RxNorm API.
  */
-export interface RxNormConceptProperty {
+export interface DrugConcept {
   rxcui: string;
   name: string;
   synonym: string;
@@ -18,7 +18,7 @@ export interface RxNormConceptProperty {
  */
 export interface RxNormConceptGroup {
   tty: string;
-  conceptProperties?: RxNormConceptProperty[];
+  conceptProperties?: DrugConcept[];
 }
 
 /**
@@ -29,6 +29,23 @@ export interface RxNormResponse {
     name?: string;
     conceptGroup: RxNormConceptGroup[];
   };
+}
+
+/**
+ * A single property for an RxNorm concept.
+ */
+export interface RxNormProperty {
+    propName: string;
+    propValue: string;
+}
+
+/**
+ * The response structure for the /properties endpoint.
+ */
+export interface RxNormPropertiesResponse {
+    propertiesGroup?: {
+        propConcept?: RxNormProperty[];
+    }
 }
 
 // --- OpenFDA API ---

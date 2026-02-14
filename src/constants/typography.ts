@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 export const FONT_SIZES = {
   headline: 24,
   title: 20,
+  subheading: 18,
   body: 16,
   caption: 14,
   small: 12,

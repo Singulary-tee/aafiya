@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -45,7 +44,7 @@ export default function MedicationDetailScreen() {
       
       <View style={styles.buttonContainer}>
         <Button title={t('edit')} onPress={() => router.push(`/medications/edit/${id}`)} />
-        <Button title={t('delete')} onPress={handleDelete} color={theme.colors.danger} />
+        <Button title={t('delete')} onPress={handleDelete} variant="secondary" />
       </View>
     </View>
   );

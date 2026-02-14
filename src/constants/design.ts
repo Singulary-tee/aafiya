@@ -1,6 +1,6 @@
 
 export const RADII = {
-  sm: 4,
+  sm: 2,
   md: 8,
   lg: 16,
   full: 9999,

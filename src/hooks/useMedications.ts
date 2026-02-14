@@ -9,7 +9,7 @@ import { getData, storeData } from "../utils/storage";
 import { logger } from "../utils/logger";
 import { ScheduleRepository } from "../database/repositories/ScheduleRepository";
 import { Schedule } from "../database/models/Schedule";
-import { DrugConcept } from "../types/api";
+import { DrugConcept, RxNormProperty } from "../types/api";
 
 // API Imports
 import { RxNormService } from '../services/api/RxNormService';
@@ -105,21 +105,21 @@ export function useMedications(profileId: string | null) {
         try {
             logger.log(`Enriching medication data for RXCUI: ${selectedDrug.rxcui}`);
             const properties = await services.rxNormService.getProperties(selectedDrug.rxcui);
-            if (properties) {
-                const brandNameProp = properties.find(p => p.propName === 'BRAND_NAME');
+            if (properties.propertiesGroup?.propConcept) {
+                const brandNameProp = properties.propertiesGroup.propConcept.find((p: RxNormProperty) => p.propName === 'BRAND_NAME');
                 if (brandNameProp) newMed.brand_name = brandNameProp.propValue;
                 
-                const dosageFormProp = properties.find(p => p.propName === 'DOSAGE_FORM');
+                const dosageFormProp = properties.propertiesGroup.propConcept.find((p: RxNormProperty) => p.propName === 'DOSAGE_FORM');
                 if (dosageFormProp) newMed.dosage_form = dosageFormProp.propValue;
             }
 
             const drugNameToSearchImage = newMed.brand_name || newMed.name;
-            const spls = await services.dailyMedService.searchSPLs(drugNameToSearchImage);
+            const spls = await services.dailyMedService.getSpls(drugNameToSearchImage);
             if (spls && spls.data.length > 0) {
                 for (const spl of spls.data) {
                     const media = await services.dailyMedService.getMedia(spl.setid);
                     if (media && media.data.length > 0) {
-                        const image = media.data.find(m => m.mime_type.startsWith('image/'));
+                        const image = media.data.find(m => m.mimetype.startsWith('image/'));
                         if (image) {
                             newMed.image_url = image.url;
                             break; 

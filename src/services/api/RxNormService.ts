@@ -1,6 +1,6 @@
 
 import { RXNORM_API } from '../../constants/api';
-import { RxNormResponse } from '../../types/api';
+import { RxNormResponse, RxNormPropertiesResponse } from '../../types/api';
 import { logger } from '../../utils/logger';
 import { RateLimiter } from './RateLimiter';
 import { ApiCacheRepository } from '../../database/repositories/ApiCacheRepository';
@@ -60,7 +60,7 @@ export class RxNormService {
      * @param rxcui The RxCUI of the drug concept.
      * @returns A promise that resolves to the properties of the concept.
      */
-    async getProperties(rxcui: string): Promise<any> {
+    async getProperties(rxcui: string): Promise<RxNormPropertiesResponse> {
         const query = `rxcui:${rxcui}:properties`;
         const cached = await this.cache.find(query, API_SOURCE);
         if (cached) {
@@ -77,7 +77,7 @@ export class RxNormService {
             if (!response.ok) {
                 throw new Error(`Failed to fetch from RxNorm: ${response.statusText}`);
             }
-            const data = await response.json();
+            const data: RxNormPropertiesResponse = await response.json();
 
             await this.cache.cacheResponse(query, API_SOURCE, data);
             logger.log(`[RxNormService] Cached properties for RxCUI "${rxcui}"`);

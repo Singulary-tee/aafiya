@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useProfile } from '@/src/hooks/useProfile';
 import { logger } from '@/src/utils/logger';
@@ -13,7 +12,7 @@ import { useMedications } from '@/src/hooks/useMedications';
 // API Imports
 import { RxNormService } from '@/src/services/api/RxNormService';
 import { ApiCacheRepository } from '@/src/database/repositories/ApiCacheRepository';
-import { DrugConcept } from '@/src/types/api';
+import { DrugConcept, RxNormConceptGroup } from '@/src/types/api';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { theme } from '@/src/constants/theme';
 import { Text } from '@/src/components/primitives/Text';
@@ -36,7 +35,6 @@ export default function AddMedicationScreen() {
   const { db, isLoading: isDbLoading } = useDatabase();
   const { t } = useTranslation(['medications']);
 
-  // Use the new and improved hook
   const { addMedication, isLoading: isAddingMedication } = useMedications(activeProfile?.id || null);
 
   const debouncedSearch = useCallback(
@@ -49,8 +47,11 @@ export default function AddMedicationScreen() {
       try {
         const apiCacheRepo = new ApiCacheRepository(db);
         const rxNormService = new RxNormService(apiCacheRepo);
-        const results = await rxNormService.searchDrugsByName(query);
-        setSearchResults(results?.drugGroup.conceptGroup?.flatMap(cg => cg.conceptProperties) || []);
+        const results = await rxNormService.findDrugsByName(query);
+        // Directly use the concepts from the API without any faulty grouping
+        const concepts = results?.drugGroup.conceptGroup?.flatMap((cg: RxNormConceptGroup) => cg.conceptProperties).filter((c): c is DrugConcept => !!c) || [];
+        setSearchResults(concepts);
+
       } catch (error) {
         logger.error('Failed to search for medications:', error);
         setSearchResults([]);
@@ -95,7 +96,6 @@ export default function AddMedicationScreen() {
         <>
           <Text style={styles.title}>{t('add_medication_title')}</Text>
           <TextInput
-            style={styles.input}
             placeholder={t('medication_name_placeholder')}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -112,20 +112,17 @@ export default function AddMedicationScreen() {
           <Text style={styles.title}>{t('confirm_medication', 'Confirm Medication')}</Text>
           <Text style={styles.selectedDrugName}>{selectedDrug.name}</Text>
           <TextInput
-            style={styles.input}
             placeholder={t('strength_placeholder')}
             value={strength}
             onChangeText={setStrength}
           />
           <TextInput
-            style={styles.input}
             placeholder={t('initial_count_placeholder')}
             value={initialCount}
             onChangeText={setInitialCount}
             keyboardType="numeric"
           />
           <TextInput
-            style={styles.input}
             placeholder={t('time_placeholder')}
             value={time}
             onChangeText={setTime}
@@ -142,19 +139,25 @@ export default function AddMedicationScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.background,
-  },
-  title: {
-    fontSize: theme.fontSizes.title,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  input: {
-    marginBottom: theme.spacing.md,
-  },
-});
+    container: {
+      flex: 1,
+      padding: 16,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 24,
+    },
+    resultItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    selectedDrugName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 16,
+    }
+  });
