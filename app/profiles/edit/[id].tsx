@@ -1,11 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { ProfileRepository } from '@/src/database/repositories/ProfileRepository';
 import { Profile } from '@/src/database/models/Profile';
-import { COLORS } from '@/src/constants/colors';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import { TextInput } from '@/src/components/primitives/TextInput';
+import Button from '@/src/components/common/Button';
 
 export default function EditProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -53,7 +56,7 @@ export default function EditProfileScreen() {
       />
       <Text style={styles.label}>Avatar Color</Text>
       <View style={styles.colorContainer}>
-        {Object.values(COLORS).map((color, index) => (
+        {Object.values(theme.colors).map((color, index) => (
           <View
             key={index}
             style={[
@@ -73,8 +76,8 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.background,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   centered: {
     flex: 1,
@@ -82,30 +85,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontSize: 16,
-    marginBottom: 8,
+    fontSize: theme.fontSizes.body,
+    marginBottom: theme.spacing.sm,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    marginBottom: theme.spacing.md,
   },
   colorContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   colorOption: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    margin: 8,
+    margin: theme.spacing.sm,
   },
   selectedColor: {
     borderWidth: 2,
-    borderColor: 'black',
+    borderColor: theme.colors.textPrimary,
   },
 });

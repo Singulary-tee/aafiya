@@ -2,9 +2,7 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { FONT_SIZES, FONT_WEIGHTS } from '../../constants/typography';
-import { SPACING } from '../../constants/spacing';
-import { COLORS, NEUTRAL_COLORS } from '../../constants/colors';
+import { theme } from '../../constants/theme';
 import { Text } from '../primitives/Text';
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
@@ -21,29 +19,23 @@ interface ButtonProps {
 const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'primary', style, textStyle, disabled }) => {
   const { t } = useTranslation('common');
 
-  const getButtonStyles = () => {
-    switch (variant) {
-      case 'primary':
-        return {
-          button: styles.primaryButton,
-          text: styles.primaryText,
-        };
-      case 'secondary':
-        return {
-          button: styles.secondaryButton,
-          text: styles.secondaryText,
-        };
-      case 'tertiary':
-        return {
-          button: styles.tertiaryButton,
-          text: styles.tertiaryText,
-        };
-      default:
-        return {};
-    }
+  // Styles are now derived from the theme object
+  const variantStyles = {
+    primary: {
+      button: { backgroundColor: theme.colors.primary },
+      text: { color: theme.colors.surface },
+    },
+    secondary: {
+      button: { backgroundColor: theme.colors.accent },
+      text: { color: theme.colors.primary },
+    },
+    tertiary: {
+      button: { backgroundColor: 'transparent' },
+      text: { color: theme.colors.primary, textDecorationLine: 'underline' },
+    },
   };
 
-  const { button, text } = getButtonStyles();
+  const { button, text } = variantStyles[variant];
 
   return (
     <TouchableOpacity
@@ -51,41 +43,19 @@ const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'primary', st
       style={[styles.button, button, style, disabled && styles.disabledButton]}
       disabled={disabled}
     >
-      <Text weight="bold" size="small" style={[styles.text, text, textStyle]}>{t(title)}</Text>
+      <Text weight="bold" size="small" style={[text, textStyle]}>{t(title)}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: 8,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.radii.md,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-  },
-  text: {
-    // Handled by Text component
-  },
-  primaryButton: {
-    backgroundColor: COLORS.primary,
-  },
-  primaryText: {
-    color: NEUTRAL_COLORS.SURFACE,
-  },
-  secondaryButton: {
-    backgroundColor: COLORS.accent,
-  },
-  secondaryText: {
-    color: COLORS.primary,
-  },
-  tertiaryButton: {
-    backgroundColor: 'transparent',
-  },
-  tertiaryText: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
   },
   disabledButton: {
     opacity: 0.5,

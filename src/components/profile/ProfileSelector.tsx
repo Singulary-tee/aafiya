@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ProfileAvatar } from './ProfileAvatar';
 import Button from '../common/Button';
 import { SPACING } from '@/src/constants/spacing';
+import { theme } from '@/src/constants/theme';
 
 // TODO: Move to a dedicated types file
 export interface Profile {
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   selected: {
-    borderColor: 'blue', // Placeholder for selection color
+    borderColor: theme.colors.primary,
     borderWidth: 2,
   },
 });

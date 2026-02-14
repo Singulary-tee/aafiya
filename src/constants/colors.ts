@@ -13,18 +13,25 @@ export const HEALTH_CIRCLE_COLORS = {
 };
 
 export const NEUTRAL_COLORS = {
-  BACKGROUND: '#FAFAFA',
-  SURFACE: '#FFFFFF',
+  BACKGROUND: '#F2F2F7',
+  SURFACE: '#FFFFFFCC',
   TEXT_PRIMARY: '#212121',
   TEXT_SECONDARY: '#757575',
   DIVIDER: '#E0E0E0',
+  GLASS_BACKGROUND: '#F2F2F7',
 };
+
+export const GLASS_COLORS = {
+    BACKGROUND: '#F2F2F7CC',
+    SURFACE: '#FFFFFFCC',
+}
 
 // Consolidating all colors for easier import
 export const COLORS = {
   ...PRIMARY_COLORS,
   ...HEALTH_CIRCLE_COLORS,
   ...NEUTRAL_COLORS,
+  ...GLASS_COLORS,
   // Direct mappings for convenience
   primary: PRIMARY_COLORS.PRIMARY,
   secondary: PRIMARY_COLORS.SECONDARY,
@@ -38,4 +45,6 @@ export const COLORS = {
   textPrimary: NEUTRAL_COLORS.TEXT_PRIMARY,
   textSecondary: NEUTRAL_COLORS.TEXT_SECONDARY,
   divider: NEUTRAL_COLORS.DIVIDER,
+  glassBackground: GLASS_COLORS.BACKGROUND,
+  glassSurface: GLASS_COLORS.SURFACE,
 };

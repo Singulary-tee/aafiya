@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { useProfile } from '@/src/hooks/useProfile';
 import { ProfileRepository } from '@/src/database/repositories/ProfileRepository';
 import { Profile } from '@/src/database/models/Profile';
-import { COLORS } from '@/src/constants/colors';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import Button from '@/src/components/common/Button';
 
 export default function SelectProfileScreen() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -59,8 +61,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
-    backgroundColor: COLORS.background,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   centered: {
     flex: 1,
@@ -68,28 +70,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: theme.fontSizes.title,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   list: {
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   profileItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    borderBottomColor: theme.colors.border,
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 16,
+    marginRight: theme.spacing.md,
   },
   profileName: {
-    fontSize: 18,
+    fontSize: theme.fontSizes.body,
   },
 });

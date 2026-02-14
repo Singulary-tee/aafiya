@@ -1,10 +1,13 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 // import { BarCodeScanner } from 'expo-barcode-scanner'; // This usually needs more setup
 import { useHelperMode } from '@/src/hooks/useHelperMode';
 import { useProfile } from '@/src/hooks/useProfile';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import Button from '@/src/components/common/Button';
 
 export default function PairHelperScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -38,7 +41,7 @@ export default function PairHelperScreen() {
       </View>
       
       <Button title="Simulate Successful Scan" onPress={handleSimulateScan} />
-      <Button title="Cancel" onPress={() => router.back()} color="red" />
+      <Button title="Cancel" onPress={() => router.back()} color="danger" />
     </View>
   );
 }
@@ -48,21 +51,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background
   },
   title: {
-    fontSize: 20,
+    fontSize: theme.fontSizes.subheading,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   scannerPlaceholder: {
     width: 250,
     height: 250,
-    backgroundColor: '#eee',
+    backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: theme.colors.border,
   }
 });

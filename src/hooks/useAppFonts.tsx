@@ -2,8 +2,8 @@ import * as Font from 'expo-font';
 import { useState, useEffect } from 'react';
 
 const customFonts = {
-  'Inter-Regular': require('../../assets/fonts/Inter-Regular.ttf'),
-  'Inter-Bold': require('../../assets/fonts/Inter-Bold.ttf'),
+  'Inter-Regular': require('../../assets/fonts/Inter_18pt-Regular.ttf'),
+  'Inter-Bold': require('../../assets/fonts/Inter_18pt-Bold.ttf'),
   'Cairo-Regular': require('../../assets/fonts/Cairo-Regular.ttf'),
   'Cairo-Bold': require('../../assets/fonts/Cairo-Bold.ttf'),
 };

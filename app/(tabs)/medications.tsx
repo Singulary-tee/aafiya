@@ -1,34 +1,30 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMedications } from '@/src/hooks/useMedications';
-import { Medication } from '@/src/database/models/Medication';
-import { COLORS } from '@/src/constants/colors';
 import { useProfile } from '@/src/hooks/useProfile';
 import { useTranslation } from 'react-i18next';
+import { Medication } from '@/src/database/models/Medication';
+import MedicationListItem from '@/src/components/medication/MedicationListItem';
+import Button from '@/src/components/common/Button';
+import { theme } from '@/src/constants/theme';
 
 export default function MedicationsScreen() {
   const { activeProfile } = useProfile();
   const { medications } = useMedications(activeProfile?.id || '');
   const router = useRouter();
-  const { t } = useTranslation('home');
+  const { t } = useTranslation('medications');
 
-  const renderMedication = ({ item }: { item: Medication }) => (
-    <TouchableOpacity style={styles.medicationItem} onPress={() => router.push(`/medications/${item.id}`)}>
-      <View>
-        <Text style={styles.medicationName}>{item.name}</Text>
-        <Text style={styles.medicationStrength}>{item.strength}</Text>
-      </View>
-      <Text style={styles.medicationCount}>{item.current_count}</Text>
-    </TouchableOpacity>
-  );
+  const handleItemPress = (item: Medication) => {
+    router.push(`/medications/${item.id}`);
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
         data={medications}
-        renderItem={renderMedication}
+        renderItem={({ item }) => <MedicationListItem item={item} onPress={() => handleItemPress(item)} />}
         keyExtractor={(item) => item.id}
         style={styles.list}
       />
@@ -43,30 +39,10 @@ export default function MedicationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.background,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   list: {
     flex: 1,
-  },
-  medicationItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  medicationName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  medicationStrength: {
-    fontSize: 14,
-    color: '#666',
-  },
-  medicationCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });

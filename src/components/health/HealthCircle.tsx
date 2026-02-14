@@ -3,7 +3,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
-import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
+import { theme } from '../../constants/theme';
 import { Text } from '../primitives/Text';
 
 interface HealthCircleProps {
@@ -20,15 +20,15 @@ const HealthCircle: React.FC<HealthCircleProps> = ({ score, size }) => {
 
   const getColorAndLabel = () => {
     if (score >= 75) {
-      return { color: HEALTH_CIRCLE_COLORS.HEALTHY, label: t('healthStatus.healthy') };
+      return { color: theme.colors.healthy, label: t('healthStatus.healthy') };
     }
     if (score >= 50) {
-      return { color: HEALTH_CIRCLE_COLORS.ATTENTION, label: t('healthStatus.attention') };
+      return { color: theme.colors.attention, label: t('healthStatus.attention') };
     }
     if (score >= 25) {
-      return { color: HEALTH_CIRCLE_COLORS.RISK, label: t('healthStatus.risk') };
+      return { color: theme.colors.risk, label: t('healthStatus.risk') };
     }
-    return { color: HEALTH_CIRCLE_COLORS.CRITICAL, label: t('healthStatus.critical') };
+    return { color: theme.colors.critical, label: t('healthStatus.critical') };
   };
 
   const { color, label } = getColorAndLabel();
@@ -37,7 +37,7 @@ const HealthCircle: React.FC<HealthCircleProps> = ({ score, size }) => {
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
         <Circle
-          stroke={NEUTRAL_COLORS.DIVIDER}
+          stroke={theme.colors.divider}
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scoreText: {
-    color: NEUTRAL_COLORS.TEXT_PRIMARY,
+    color: theme.colors.textPrimary,
   },
   label: {
     marginTop: 4,

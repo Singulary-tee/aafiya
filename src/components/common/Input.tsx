@@ -2,8 +2,7 @@
 import React from 'react';
 import { StyleSheet, View, TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
+import { theme } from '../../constants/theme';
 import { Text } from '../primitives/Text';
 import { TextInput } from '../primitives/TextInput';
 
@@ -21,7 +20,7 @@ const Input: React.FC<InputProps> = ({ label, error, ...props }) => {
       <TextInput
         size="body"
         style={[styles.input, !!error && styles.inputError]}
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor={theme.colors.textSecondary} // Updated from theme
         {...props}
       />
       {error && <Text size="caption" style={styles.errorText}>{t(error)}</Text>}
@@ -31,26 +30,26 @@ const Input: React.FC<InputProps> = ({ label, error, ...props }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: SPACING.md,
+    marginBottom: theme.spacing.md,
   },
   label: {
-    marginBottom: SPACING.sm,
-    color: COLORS.textPrimary,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.textPrimary,
   },
   input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 8,
-    padding: SPACING.md,
-    color: COLORS.textPrimary,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+    color: theme.colors.textPrimary,
     borderWidth: 1,
-    borderColor: COLORS.divider,
+    borderColor: theme.colors.divider, // Updated from theme
   },
   inputError: {
-    borderColor: COLORS.critical,
+    borderColor: theme.colors.critical,
   },
   errorText: {
-    marginTop: SPACING.sm,
-    color: COLORS.critical,
+    marginTop: theme.spacing.sm,
+    color: theme.colors.critical,
   },
 });
 

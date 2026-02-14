@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { useProfile } from '@/src/hooks/useProfile';
@@ -10,6 +10,10 @@ import { Medication } from '@/src/database/models/Medication';
 import { Schedule } from '@/src/database/models/Schedule';
 import { logger } from '@/src/utils/logger';
 import { useTranslation } from 'react-i18next';
+import { theme } from '@/src/constants/theme';
+import { Text } from '@/src/components/primitives/Text';
+import Button from '@/src/components/common/Button';
+import { TextInput } from '@/src/components/primitives/TextInput';
 
 export default function AddMedicationScreen() {
   const [name, setName] = useState('');
@@ -115,19 +119,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   title: {
-    fontSize: 24,
+    fontSize: theme.fontSizes.title,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    marginBottom: theme.spacing.md,
   },
 });

@@ -2,8 +2,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Medication } from '../../database/models/Medication';
-import { NEUTRAL_COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
+import { theme } from '../../constants/theme';
 import Card from '../common/Card';
 import PillImage from './PillImage';
 import { useTranslation } from 'react-i18next';
@@ -21,12 +20,12 @@ const MedicationCard: React.FC<MedicationCardProps> = ({ medication }) => {
       <View style={styles.header}>
         <PillImage imageUrl={medication.image_url || ''} size={80} />
         <View style={styles.headerText}>
-          <Text size="title" weight="bold" style={styles.name}>{medication.name}</Text>
+          <Text size="title" weight="bold">{medication.name}</Text>
           <Text size="body" style={styles.strength}>{medication.strength}</Text>
         </View>
       </View>
 
-      <View style={styles.infoSection}>
+      <View>
         <InfoRow label={t('details.form')} value={medication.dosage_form} />
         <InfoRow label={t('details.quantity')} value={medication.current_count?.toString()} />
         <InfoRow label={t('details.notes')} value={medication.notes} />
@@ -44,49 +43,38 @@ const InfoRow: React.FC<InfoRowProps> = ({ label, value }) => (
     value ? (
         <View style={styles.infoRow}>
             <Text size="body" style={styles.infoLabel}>{label}</Text>
-            <Text size="body" weight="medium" style={styles.infoValue}>{value}</Text>
+            <Text size="body" weight="medium">{value}</Text>
         </View>
     ) : null
 )
 
 const styles = StyleSheet.create({
   card: {
-    padding: SPACING.lg,
+    padding: theme.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: theme.spacing.lg,
   },
   headerText: {
-    marginLeft: SPACING.md,
+    marginLeft: theme.spacing.md,
     flex: 1,
   },
-  name: {
-    color: NEUTRAL_COLORS.TEXT_PRIMARY,
-  },
   strength: {
-    color: NEUTRAL_COLORS.TEXT_SECONDARY,
-    marginTop: SPACING.xs,
-  },
-  infoSection: {
-    // styles for the info section
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: SPACING.sm,
+    paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: NEUTRAL_COLORS.DIVIDER,
+    borderBottomColor: theme.colors.divider,
   },
   infoLabel: {
-    color: NEUTRAL_COLORS.TEXT_SECONDARY,
+    color: theme.colors.textSecondary,
     flex: 1,
-  },
-  infoValue: {
-    color: NEUTRAL_COLORS.TEXT_PRIMARY,
-    flex: 2,
-    textAlign: 'right',
   },
 });
 

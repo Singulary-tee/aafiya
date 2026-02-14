@@ -1,10 +1,12 @@
+
 import React from 'react';
 import { TextInput as RNTextInput, StyleSheet } from 'react-native';
-import { useCustomFonts, FONT_SIZES, FONT_WEIGHTS } from '@/src/constants/typography';
+import { theme } from '../../constants/theme'; // Updated path
+import { useCustomFonts } from '../../constants/typography';
 
 type TextInputProps = RNTextInput['props'] & {
-  size?: keyof typeof FONT_SIZES;
-  weight?: keyof typeof FONT_WEIGHTS;
+  size?: keyof typeof theme.fontSizes;
+  weight?: keyof typeof theme.fontWeights;
 };
 
 export const TextInput: React.FC<TextInputProps> = ({
@@ -15,21 +17,19 @@ export const TextInput: React.FC<TextInputProps> = ({
 }) => {
   const { getFontFamily } = useCustomFonts();
   const fontFamily = getFontFamily(weight);
-  const fontSize = FONT_SIZES[size];
 
   return (
     <RNTextInput
-      style={[{ fontFamily, fontSize }, styles.input, style]}
+      style={[styles.input, { fontFamily, fontSize: theme.fontSizes[size] }, style]}
+      placeholderTextColor={theme.colors.textSecondary}
       {...props}
     />
   );
 };
 
 const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-  },
-});
+    input: {
+      color: theme.colors.textPrimary,
+      padding: theme.spacing.md,
+    },
+  });

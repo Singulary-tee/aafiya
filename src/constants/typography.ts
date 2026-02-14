@@ -25,7 +25,7 @@ export const useCustomFonts = () => {
     }
 
     const isArabic = i18n.language === 'ar';
-    const fontPrefix = isArabic ? 'Cairo' : 'Inter';
+    const fontPrefix = isArabic ? 'Cairo' : 'Inter_18pt';
 
     switch (weight) {
       case 'bold':

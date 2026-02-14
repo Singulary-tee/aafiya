@@ -2,8 +2,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
+import { theme } from '../../constants/theme';
 import Card from '../common/Card';
 import { Text } from '../primitives/Text';
 
@@ -45,11 +44,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    color: COLORS.textPrimary,
+    color: theme.colors.textPrimary,
   },
   statLabel: {
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xs,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
   },
 });
 

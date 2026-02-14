@@ -1,8 +1,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { COLORS } from '../../constants/colors';
-import { SPACING } from '../../constants/spacing';
+import { theme } from '../../constants/theme';
 import { Text } from '../primitives/Text';
 
 interface Props {
@@ -45,15 +44,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
-    padding: SPACING.lg,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.lg,
   },
   title: {
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.md,
   },
   message: {
-    color: COLORS.textSecondary,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 });

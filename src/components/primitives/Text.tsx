@@ -1,10 +1,12 @@
+
 import React from 'react';
 import { Text as RNText, StyleSheet } from 'react-native';
-import { useCustomFonts, FONT_SIZES, FONT_WEIGHTS } from '@/src/constants/typography';
+import { theme } from '../../constants/theme'; // Updated path
+import { useCustomFonts } from '../../constants/typography';
 
 type TextProps = RNText['props'] & {
-  size?: keyof typeof FONT_SIZES;
-  weight?: keyof typeof FONT_WEIGHTS;
+  size?: keyof typeof theme.fontSizes;
+  weight?: keyof typeof theme.fontWeights;
 };
 
 export const Text: React.FC<TextProps> = ({
@@ -16,11 +18,16 @@ export const Text: React.FC<TextProps> = ({
 }) => {
   const { getFontFamily } = useCustomFonts();
   const fontFamily = getFontFamily(weight);
-  const fontSize = FONT_SIZES[size];
 
   return (
-    <RNText style={[{ fontFamily, fontSize }, style]} {...props}>
+    <RNText style={[styles.text, { fontFamily, fontSize: theme.fontSizes[size] }, style]} {...props}>
       {children}
     </RNText>
   );
 };
+
+const styles = StyleSheet.create({
+    text: {
+      color: theme.colors.textPrimary, // Added default color
+    },
+  });

@@ -1,31 +1,22 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useProfile, ProfileProvider } from '@/src/hooks/useProfile';
+import { ProfileProvider, useProfile } from '@/src/hooks/useProfile';
 import { DatabaseProvider } from '@/src/hooks/useDatabase';
 import { ActivityIndicator } from 'react-native';
-import { i18nInitialization } from '@/src/i18n';
 import { useTranslation } from 'react-i18next';
-import { useAppFonts } from '@/src/hooks/useAppFonts';
-import { FontSettingsProvider, useFontSettings } from '@/src/hooks/useFontSettings';
+import { FontSettingsProvider } from '@/src/hooks/useFontSettings';
+import { useAppInit } from '@/src/hooks/useAppInit';
 
 const AppLayoutInner = () => {
+  const { t } = useTranslation(['profiles', 'medications']);
+  const { isInitialized } = useAppInit();
   const { activeProfile, isLoading: isProfileLoading } = useProfile();
   const router = useRouter();
   const segments = useSegments();
-  const { t } = useTranslation(['profiles', 'medications']);
-  const [isI18nInitialized, setIsI18nInitialized] = useState(false);
-  const fontsLoaded = useAppFonts();
-  const { isFontSettingLoaded } = useFontSettings();
 
-  useEffect(() => {
-    i18nInitialization.then(() => {
-      setIsI18nInitialized(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (isProfileLoading || !isI18nInitialized || !fontsLoaded || !isFontSettingLoaded) return;
+  React.useEffect(() => {
+    if (isProfileLoading || !isInitialized) return;
 
     const inTabsGroup = segments[0] === '(tabs)';
     const onAuthScreens = segments[0] === 'profiles';
@@ -36,9 +27,9 @@ const AppLayoutInner = () => {
     else if (!activeProfile && !onAuthScreens) {
         router.replace('/profiles/select');
     }
-  }, [activeProfile, isProfileLoading, isI18nInitialized, segments, fontsLoaded, isFontSettingLoaded]);
+  }, [activeProfile, isProfileLoading, isInitialized, segments]);
 
-  if (isProfileLoading || !isI18nInitialized || !fontsLoaded || !isFontSettingLoaded) {
+  if (!isInitialized || isProfileLoading) {
     return <ActivityIndicator style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
@@ -55,7 +46,9 @@ const AppLayoutInner = () => {
 const AppLayout = () => {
     return (
         <FontSettingsProvider>
-            <AppLayoutInner />
+            <ProfileProvider>
+              <AppLayoutInner />
+            </ProfileProvider>
         </FontSettingsProvider>
     )
 }
@@ -63,9 +56,7 @@ const AppLayout = () => {
 export default function RootLayout() {
   return (
     <DatabaseProvider>
-      <ProfileProvider>
         <AppLayout />
-      </ProfileProvider>
     </DatabaseProvider>
   );
 }

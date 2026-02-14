@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { HEALTH_CIRCLE_COLORS, NEUTRAL_COLORS } from '../../constants/colors';
+import { theme } from '../../constants/theme';
 import { Text } from '../primitives/Text';
 
 interface StorageCircleProps {
@@ -18,15 +18,15 @@ const StorageCircle: React.FC<StorageCircleProps> = ({ daysRemaining, size, onPr
 
   const getColor = () => {
     if (daysRemaining >= 14) {
-      return HEALTH_CIRCLE_COLORS.HEALTHY;
+      return theme.colors.healthy;
     }
     if (daysRemaining >= 7) {
-      return HEALTH_CIRCLE_COLORS.ATTENTION;
+      return theme.colors.attention;
     }
     if (daysRemaining > 0) {
-      return HEALTH_CIRCLE_COLORS.CRITICAL;
+      return theme.colors.critical;
     }
-    return NEUTRAL_COLORS.DIVIDER;
+    return theme.colors.divider;
   };
 
   const color = getColor();

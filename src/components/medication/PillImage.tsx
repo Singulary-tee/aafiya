@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import { COLORS } from '../../constants/colors';
+import { theme } from '../../constants/theme';
 
 interface PillImageProps {
   imageUrl?: string;
@@ -22,8 +22,8 @@ const PillImage: React.FC<PillImageProps> = ({ imageUrl, size = 60 }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.md,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',

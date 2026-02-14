@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { setData, getData } from '@/src/utils/storage';
+import { storeData, getData } from '@/src/utils/storage';
 
 const FONT_SETTING_KEY = 'useCustomFonts';
 
@@ -21,7 +21,7 @@ export const FontSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const loadSetting = async () => {
       const storedSetting = await getData(FONT_SETTING_KEY);
       if (storedSetting !== null) {
-        setUseCustomFonts(JSON.parse(storedSetting));
+        setUseCustomFonts(storedSetting);
       }
       setIsFontSettingLoaded(true);
     };
@@ -31,7 +31,7 @@ export const FontSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const handleSetUseCustomFonts = (value: boolean) => {
     setUseCustomFonts(value);
-    setData(FONT_SETTING_KEY, JSON.stringify(value));
+    storeData(FONT_SETTING_KEY, value);
   };
 
   return (

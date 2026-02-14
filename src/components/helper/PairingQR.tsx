@@ -4,7 +4,7 @@ import QRCode from 'react-native-qrcode-svg';
 import Card from '@/src/components/common/Card';
 import { View, StyleSheet } from 'react-native';
 import { SPACING } from '@/src/constants/spacing';
-import { COLORS } from '@/src/constants/colors';
+import { theme } from '@/src/constants/theme';
 
 interface PairingQRProps {
   qrData: string;
@@ -17,8 +17,8 @@ export function PairingQR({ qrData }: PairingQRProps) {
         <QRCode
           value={qrData}
           size={250}
-          backgroundColor={COLORS.surface}
-          color={COLORS.textPrimary}
+          backgroundColor={theme.colors.surface}
+          color={theme.colors.textPrimary}
         />
       </View>
     </Card>
