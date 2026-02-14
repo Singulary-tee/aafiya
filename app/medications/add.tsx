@@ -2,7 +2,6 @@ import { useProfile } from '@/src/hooks/useProfile';
 import { logger } from '@/src/utils/logger';
 import { validateCount, validateMedicationName, validateScheduleTimes } from '@/src/utils/validation';
 import { useRouter } from 'expo-router';
-import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -20,6 +19,20 @@ import { ApiCacheRepository } from '@/src/database/repositories/ApiCacheReposito
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { RxNormService } from '@/src/services/api/RxNormService';
 import { DrugConcept, RxNormConceptGroup } from '@/src/types/api';
+
+const debounce = <T extends (...args: any[]) => void>(fn: T, delayMs: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delayMs);
+  };
+};
 
 export default function AddMedicationScreen() {
   const [entryMode, setEntryMode] = useState<'search' | 'manual'>('search');
