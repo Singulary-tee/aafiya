@@ -11,11 +11,13 @@ import { theme } from '@/src/constants/theme';
 import { APP_CONFIG } from '@/src/constants/config';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { exportAllData } from '@/src/utils/dataExport';
+import { useOnboarding } from '@/src/hooks/useOnboarding';
 
 export default function SettingsScreen() {
   const { t } = useTranslation(['settings']);
   const router = useRouter();
   const { db } = useDatabase();
+  const { resetOnboarding } = useOnboarding();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [autoRefillEnabled, setAutoRefillEnabled] = useState(false);
@@ -202,6 +204,15 @@ export default function SettingsScreen() {
           label={t('about_app')}
           icon="information-circle-outline"
           onPress={() => router.push('/settings/about')}
+          showChevron
+        />
+        <SettingsItem 
+          label={t('replay_onboarding')}
+          icon="play-outline"
+          onPress={async () => {
+            await resetOnboarding();
+            router.push('/onboarding');
+          }}
           showChevron
         />
         <SettingsItem 
