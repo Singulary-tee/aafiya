@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { applyMigrationV2 } from './migrations/v2_new_features';
 
 const DB_NAME = 'medication_tracker.db';
 
@@ -141,6 +142,12 @@ const applyMigrations = async (db: SQLite.SQLiteDatabase) => {
             `);
         
         console.log('Database schema version 1 created/updated successfully.');
+    }
+    
+    // Apply migration v2
+    if (currentVersion < 2) {
+        await applyMigrationV2(db);
+        console.log('Database schema version 2 applied successfully.');
     }
 };
 
