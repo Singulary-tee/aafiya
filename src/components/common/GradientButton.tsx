@@ -126,10 +126,10 @@ const GradientButton: React.FC<GradientButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: theme.radii.md,
+    borderRadius: theme.radii.standard,
     overflow: 'hidden',
-    minHeight: 44, // Minimum touch target size (accessibility)
-    ...theme.shadows.subtle,
+    minHeight: 44,
+    ...theme.shadows.level1,
   },
   gradientContent: {
     paddingVertical: theme.spacing.md,

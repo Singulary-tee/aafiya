@@ -3,6 +3,13 @@
 export const RADII = {
   standard: 12, // 12dp for everything (cards, buttons, inputs, modals, images)
   full: 9999, // For circular elements
+  // Backward compatibility aliases (all map to standard 12dp)
+  xs: 12,
+  sm: 12,
+  md: 12,
+  lg: 12,
+  xl: 12,
+  xxl: 12,
 };
 
 // Backward compatibility alias
