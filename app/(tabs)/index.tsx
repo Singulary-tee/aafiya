@@ -39,7 +39,7 @@ export default function HomeScreen() {
     return (
       <GradientBackground gradient="BRAND_SUBTLE">
         <View style={styles.centered}>
-          <Text>{t('no_active_profile')}</Text>
+          <Text size="medium">{t('no_active_profile')}</Text>
         </View>
       </GradientBackground>
     );
@@ -48,7 +48,7 @@ export default function HomeScreen() {
   return (
     <GradientBackground gradient="BRAND_SUBTLE">
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text size="headline" weight="bold" style={styles.header}>
+        <Text size="large" weight="bold" style={styles.header}>
           {t('welcome')}, {activeProfile.name}
         </Text>
 

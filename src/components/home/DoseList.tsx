@@ -19,9 +19,9 @@ export const DoseList: React.FC<DoseListProps> = ({ doses, onLogDose }) => {
 
   return (
     <View>
-      <Text size="title" weight="bold" style={styles.subHeader}>{t('todays_doses')}</Text>
+      <Text size="large" weight="bold" style={styles.subHeader}>{t('todays_doses')}</Text>
       {doses.length === 0 ? (
-        <GlassCard variant="surface" shadow="subtle">
+        <GlassCard intensity={20} padding="md" elevation="level1">
           <EmptyState
             icon="checkmark-circle-outline"
             title={t('all_caught_up')}

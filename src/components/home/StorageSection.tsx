@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/src/components/primitives/Text';
 import HealthCircle from '@/src/components/health/HealthCircle';
@@ -20,27 +21,29 @@ export const StorageSection: React.FC<StorageSectionProps> = ({ healthScore, med
   const { t } = useTranslation('home');
 
   return (
-    <GlassCard variant="surface" shadow="glass" style={styles.container}>
-      <View style={styles.topSection}>
-        <View style={styles.healthCircleContainer}>
-          <HealthCircle score={healthScore ?? 0} size={120} />
+    <Animated.View entering={FadeIn.duration(300)}>
+      <GlassCard intensity={20} padding="md" elevation="level1" style={styles.container}>
+        <View style={styles.topSection}>
+          <View style={styles.healthCircleContainer}>
+            <HealthCircle score={healthScore ?? 0} size={120} />
+          </View>
+          <View style={styles.storageSection}>
+            <Text size="medium" weight="bold" style={styles.subHeader}>{t('storage_levels')}</Text>
+            {medications.slice(0, 3).map(med => (
+              <View key={med.id} style={styles.storageItem}>
+                <Text size="medium" numberOfLines={1} style={styles.medicationName}>{med.name}</Text>
+                <StorageCircle daysRemaining={storageInfo[med.id] ?? 0} size="small" />
+              </View>
+            ))}
+            {medications.length > 3 && (
+              <Text size="small" style={styles.moreText}>
+                {t('and_more', { count: medications.length - 3 })}
+              </Text>
+            )}
+          </View>
         </View>
-        <View style={styles.storageSection}>
-          <Text size="title" weight="bold" style={styles.subHeader}>{t('storage_levels')}</Text>
-          {medications.slice(0, 3).map(med => (
-            <View key={med.id} style={styles.storageItem}>
-              <Text size="body" numberOfLines={1} style={styles.medicationName}>{med.name}</Text>
-              <StorageCircle daysRemaining={storageInfo[med.id] ?? 0} size="small" />
-            </View>
-          ))}
-          {medications.length > 3 && (
-            <Text size="caption" style={styles.moreText}>
-              {t('and_more', { count: medications.length - 3 })}
-            </Text>
-          )}
-        </View>
-      </View>
-    </GlassCard>
+      </GlassCard>
+    </Animated.View>
   );
 };
 
@@ -66,8 +69,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-    paddingVertical: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+    paddingVertical: 4,
   },
   medicationName: {
     flex: 1,
@@ -75,8 +78,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   moreText: {
-    marginTop: theme.spacing.xs,
-    color: theme.colors.textTertiary,
-    fontStyle: 'italic',
+    marginTop: theme.spacing.sm,
+    color: theme.colors.textSecondary,
   },
 });
