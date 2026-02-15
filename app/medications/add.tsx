@@ -10,9 +10,11 @@ import { Ionicons } from '@expo/vector-icons';
 // Hook Import
 import { useMedications } from '@/src/hooks/useMedications';
 import { useNotifications } from '@/src/hooks/useNotifications';
+import { useNetworkStatus } from '@/src/hooks/useNetworkStatus';
 
 // API Imports
 import Button from '@/src/components/common/Button';
+import EmptyState from '@/src/components/common/EmptyState';
 import { Text } from '@/src/components/primitives/Text';
 import { TextInput } from '@/src/components/primitives/TextInput';
 import { theme } from '@/src/constants/theme';
@@ -44,6 +46,7 @@ export default function AddMedicationScreen() {
   const { db, isLoading: isDbLoading } = useDatabase();
   const { schedule } = useNotifications();
   const { t } = useTranslation(['medications']);
+  const isOnline = useNetworkStatus();
 
   const [entryMode, setEntryMode] = useState<'search' | 'manual'>('search');
   const [searchQuery, setSearchQuery] = useState('');
@@ -296,6 +299,14 @@ export default function AddMedicationScreen() {
           </View>
           {entryMode === 'search' ? (
             <>
+              {!isOnline && (
+                <View style={styles.offlineBanner}>
+                  <Ionicons name="warning-outline" size={16} color={theme.colors.warning} style={styles.offlineIcon} />
+                  <Text size="small" style={styles.offlineText}>
+                    {t('offline_search')}
+                  </Text>
+                </View>
+              )}
               <TextInput
                 placeholder={t('medication_name_placeholder')}
                 value={searchQuery}
@@ -308,7 +319,17 @@ export default function AddMedicationScreen() {
                 keyExtractor={(item: MedicationGroup) => item.baseName}
                 keyboardShouldPersistTaps="handled"
                 ListEmptyComponent={!isSearching && searchQuery.length >= 3 ? (
-                  <Text style={styles.helperText}>{t('no_search_results')}</Text>
+                  <EmptyState
+                    icon="search-outline"
+                    title={t('no_results_title', { query: searchQuery })}
+                    description={t('no_results_suggestions')}
+                    actionLabel={t('enter_manually')}
+                    onAction={() => {
+                      setManualName(searchQuery);
+                      setEntryMode('manual');
+                    }}
+                    style={styles.emptyState}
+                  />
                 ) : null}
               />
             </>
@@ -485,6 +506,24 @@ const styles = StyleSheet.create({
   badgeText: {
     color: theme.colors.surface,
     fontSize: 12,
+  },
+  offlineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.warning + '15',
+    padding: theme.spacing.sm,
+    borderRadius: theme.radii.sm,
+    marginBottom: theme.spacing.md,
+  },
+  offlineIcon: {
+    marginRight: theme.spacing.xs,
+  },
+  offlineText: {
+    color: theme.colors.textSecondary,
+    flex: 1,
+  },
+  emptyState: {
+    marginTop: theme.spacing.xl,
   },
   selectedDrugName: {
     textAlign: 'center',
