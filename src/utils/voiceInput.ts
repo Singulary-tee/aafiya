@@ -1,6 +1,18 @@
-import { Audio } from 'expo-av';
+import {
+    ExpoSpeechRecognitionModule,
+    addSpeechRecognizedListener,
+    addSpeechErrorListener,
+    getStateAsync,
+    start,
+    stop,
+    requestPermissionsAsync,
+    getPermissionsAsync,
+} from 'expo-speech-recognition';
 import * as Speech from 'expo-speech';
 import { logger } from './logger';
+
+// Store the recognition instance state
+let isListening = false;
 
 /**
  * Requests microphone permission for voice input.
@@ -8,7 +20,7 @@ import { logger } from './logger';
  */
 export async function requestMicrophonePermission(): Promise<boolean> {
     try {
-        const { status } = await Audio.requestPermissionsAsync();
+        const { status } = await requestPermissionsAsync();
         return status === 'granted';
     } catch (error) {
         logger.error('Error requesting microphone permission:', error);
@@ -17,66 +29,96 @@ export async function requestMicrophonePermission(): Promise<boolean> {
 }
 
 /**
- * Starts voice recognition for medication search using Web Speech API.
- * This works on modern browsers and some platforms. For full support across
- * all React Native platforms, consider react-native-voice package.
+ * Checks if microphone permission is granted.
+ * @returns true if permission is granted, false otherwise.
+ */
+export async function hasMicrophonePermission(): Promise<boolean> {
+    try {
+        const { status } = await getPermissionsAsync();
+        return status === 'granted';
+    } catch (error) {
+        logger.error('Error checking microphone permission:', error);
+        return false;
+    }
+}
+
+/**
+ * Starts voice recognition for medication search using expo-speech-recognition.
+ * This is a native module that works on both Android and iOS devices.
  * 
  * @param onResult Callback function when speech is recognized.
  * @param onError Callback function when an error occurs.
+ * @returns Cleanup function to remove listeners
  */
 export function startVoiceInput(
     onResult: (text: string) => void,
     onError?: (error: string) => void
-): void {
+): () => void {
     try {
-        // Check if we're in a web environment with Speech Recognition support
-        if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-            const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-            const recognition = new SpeechRecognition();
+        // Set up listeners
+        const resultSubscription = addSpeechRecognizedListener((event) => {
+            logger.info('Voice input recognized:', event.results);
             
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-            recognition.lang = 'en-US'; // Can be made configurable
-            
-            recognition.onresult = (event: any) => {
-                const transcript = event.results[0][0].transcript;
-                logger.info('Voice input recognized:', transcript);
-                onResult(transcript);
-            };
-            
-            recognition.onerror = (event: any) => {
-                logger.error('Voice input error:', event.error);
-                if (onError) {
-                    onError(`Speech recognition error: ${event.error}`);
+            // Get the most recent recognized text
+            if (event.results && event.results.length > 0) {
+                const lastResult = event.results[event.results.length - 1];
+                if (lastResult.transcript && lastResult.transcript.length > 0) {
+                    const transcript = lastResult.transcript;
+                    logger.info('Recognized text:', transcript);
+                    onResult(transcript);
                 }
-            };
-            
-            recognition.start();
-            logger.info('Voice input started');
-        } else {
-            // Fallback: Request user to speak and use a simple prompt
-            logger.warn('Web Speech API not available, using fallback');
-            if (onError) {
-                onError('Voice input not available on this platform. Please type the medication name.');
             }
-        }
+        });
+
+        const errorSubscription = addSpeechErrorListener((event) => {
+            logger.error('Voice input error:', event.error);
+            isListening = false;
+            if (onError) {
+                onError(`Speech recognition error: ${event.error}`);
+            }
+        });
+
+        // Start recognition
+        start({
+            lang: 'en-US',
+            interimResults: false,
+            maxAlternatives: 1,
+            continuous: false,
+            requiresOnDeviceRecognition: false,
+            addsPunctuation: false,
+            contextualStrings: ['medication', 'medicine', 'drug', 'pill', 'tablet'],
+        });
+
+        isListening = true;
+        logger.info('Voice input started');
+
+        // Return cleanup function
+        return () => {
+            resultSubscription.remove();
+            errorSubscription.remove();
+            if (isListening) {
+                stop();
+                isListening = false;
+            }
+        };
     } catch (error) {
         logger.error('Error starting voice input:', error);
+        isListening = false;
         if (onError) {
             onError('Failed to start voice input. Please type the medication name.');
         }
+        return () => {}; // Return no-op cleanup function
     }
 }
 
 /**
  * Stops ongoing voice recognition.
  */
-export function stopVoiceInput(): void {
+export async function stopVoiceInput(): Promise<void> {
     try {
-        if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-            // Note: In a production app, you'd store the recognition instance
-            // and call recognition.stop() here
+        if (isListening) {
+            await stop();
+            isListening = false;
             logger.info('Voice input stopped');
         }
     } catch (error) {
@@ -88,12 +130,34 @@ export function stopVoiceInput(): void {
  * Checks if voice input is available on the device.
  * @returns true if voice input is available, false otherwise.
  */
-export function isVoiceInputAvailable(): boolean {
-    // Check for Web Speech API support
-    if (typeof window !== 'undefined') {
-        return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+export async function isVoiceInputAvailable(): Promise<boolean> {
+    try {
+        // Check if the module is available
+        if (!ExpoSpeechRecognitionModule) {
+            return false;
+        }
+        
+        // Check if we have permissions
+        const { status } = await getPermissionsAsync();
+        return status === 'granted';
+    } catch (error) {
+        logger.error('Error checking voice input availability:', error);
+        return false;
     }
-    return false;
+}
+
+/**
+ * Gets the current state of speech recognition.
+ * @returns The current state (e.g., 'inactive', 'starting', 'recognizing')
+ */
+export async function getVoiceInputState(): Promise<string> {
+    try {
+        const state = await getStateAsync();
+        return state;
+    } catch (error) {
+        logger.error('Error getting voice input state:', error);
+        return 'inactive';
+    }
 }
 
 /**

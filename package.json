@@ -43,12 +43,14 @@
     "expo-router": "~6.0.23",
     "expo-secure-store": "~15.0.8",
     "expo-speech": "~13.0.8",
+    "expo-speech-recognition": "~0.2.0",
     "expo-splash-screen": "~31.0.13",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-task-manager": "~14.0.3",
+    "expo-text-extractor": "~0.0.1",
     "expo-web-browser": "~15.0.10",
     "i18next": "^25.8.7",
     "react": "19.1.0",
@@ -65,7 +67,6 @@
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
     "react-native-zeroconf": "^0.14.0",
-    "tesseract.js": "^5.1.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

@@ -1,8 +1,8 @@
-import { Camera, CameraType } from 'expo-camera';
+import { Camera } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as TextExtractor from 'expo-text-extractor';
 import { logger } from './logger';
-import { createWorker } from 'tesseract.js';
 
 /**
  * Requests camera permission for OCR.
@@ -33,8 +33,8 @@ export async function hasCameraPermission(): Promise<boolean> {
 }
 
 /**
- * Takes a photo and extracts text from it using Tesseract.js OCR.
- * This runs entirely offline on the device.
+ * Takes a photo and extracts text from it using expo-text-extractor.
+ * This is a native Expo module that works on Android and iOS devices.
  * 
  * @param cameraRef Reference to the camera component.
  * @param onResult Callback function with extracted text.
@@ -65,7 +65,7 @@ export async function captureAndExtractText(
 
         logger.info('Photo captured:', photo.uri);
 
-        // Process image with Tesseract.js for OCR
+        // Process image with expo-text-extractor
         try {
             const extractedText = await performOCR(photo.uri);
             
@@ -96,31 +96,23 @@ export async function captureAndExtractText(
 }
 
 /**
- * Performs OCR on an image using Tesseract.js.
- * This is an offline, on-device OCR solution.
+ * Performs OCR on an image using expo-text-extractor.
+ * This is a native Expo module that works on Android and iOS.
  * 
  * @param imageUri URI of the image to process.
  * @returns Extracted text from the image.
  */
 async function performOCR(imageUri: string): Promise<string> {
     try {
-        logger.info('Starting OCR processing...');
+        logger.info('Starting OCR processing with expo-text-extractor...');
         
-        // Create Tesseract worker
-        const worker = await createWorker('eng', 1, {
-            logger: (m) => logger.log('[Tesseract]', m),
-        });
-
-        // Perform OCR
-        const { data: { text } } = await worker.recognize(imageUri);
+        // Use expo-text-extractor to extract text from the image
+        const result = await TextExtractor.extractTextFromImageAsync(imageUri);
         
-        // Terminate worker
-        await worker.terminate();
-        
-        logger.info('OCR completed, extracted text length:', text.length);
-        return text;
+        logger.info('OCR completed, extracted text length:', result.text.length);
+        return result.text;
     } catch (error) {
-        logger.error('Tesseract OCR error:', error);
+        logger.error('expo-text-extractor OCR error:', error);
         throw error;
     }
 }
