@@ -26,17 +26,17 @@ All previously identified placeholders have been replaced with real, working imp
 **Status**: FULLY WORKING
 
 **Implementation**:
-- Uses Web Speech API (webkitSpeechRecognition/SpeechRecognition)
+- Uses expo-speech-recognition (native React Native module)
 - Real-time speech-to-text conversion
-- Microphone permission handling via expo-av
+- Native Android SpeechRecognizer and iOS SFSpeechRecognizer
 - Text-to-speech feedback for accessibility
-- Graceful fallback for unsupported platforms
+- Event-driven architecture with proper cleanup
 
 **Technology**:
-- expo-av for audio permissions
+- expo-speech-recognition for STT (native)
 - expo-speech for TTS
-- Web Speech API for STT
-- 100% offline (browser-based, no cloud)
+- 100% on-device processing (no cloud required)
+- Works on Android and iOS devices
 
 **Usage**: Users can speak medication names, automatically fills search field
 
@@ -44,16 +44,16 @@ All previously identified placeholders have been replaced with real, working imp
 **Status**: FULLY WORKING
 
 **Implementation**:
-- Tesseract.js OCR engine (offline, on-device)
+- expo-text-extractor (native React Native module)
 - Real text extraction from pill bottle photos
+- Native ML Kit (Android) and Vision framework (iOS)
 - Automatic medication name parsing
 - Enhanced heuristics for medication detection
-- Works with expo-camera
 
 **Technology**:
-- tesseract.js (offline OCR)
-- expo-image-manipulator (image processing)
+- expo-text-extractor (native OCR)
 - expo-camera (photo capture)
+- expo-image-manipulator (image processing)
 - 100% on-device processing (no cloud, no API calls)
 
 **Usage**: Users take photo of medication bottle, text extracted automatically
@@ -78,21 +78,22 @@ All previously identified placeholders have been replaced with real, working imp
 
 ## Dependencies Added
 
-### New Packages (All Offline-First)
+### New Packages (All Offline-First & Native React Native)
 
 ```json
 {
-  "expo-av": "~16.0.12",              // Audio permissions
-  "expo-document-picker": "~13.0.9",  // File selection
-  "expo-image-manipulator": "~13.0.9", // Image processing  
-  "expo-speech": "~13.0.8",            // Text-to-speech
-  "tesseract.js": "^5.1.1"             // OCR engine (offline)
+  "expo-document-picker": "~13.0.9",      // File selection
+  "expo-image-manipulator": "~13.0.9",    // Image processing  
+  "expo-speech": "~13.0.8",               // Text-to-speech
+  "expo-speech-recognition": "~0.2.0",    // Speech-to-text (native)
+  "expo-text-extractor": "~0.0.1"         // OCR engine (native)
 }
 ```
 
-**Total Size Impact**: ~5MB (mostly Tesseract language data)  
+**Total Size Impact**: ~2MB (native modules are lightweight)  
 **Network Requirements**: ZERO (all work offline)  
-**Privacy Impact**: ZERO (all on-device processing)
+**Privacy Impact**: ZERO (all on-device processing)  
+**Platform Support**: Android & iOS (proper React Native modules)
 
 ---
 
