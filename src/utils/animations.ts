@@ -77,18 +77,3 @@ export const triggerHapticFeedback = (type: 'light' | 'medium' | 'heavy' | 'succ
   }
 };
 
-/**
- * Animate with spring
- */
-export const animateSpring = (value: any, toValue: number) => {
-  'worklet';
-  return withSpring(toValue, SPRING_CONFIG);
-};
-
-/**
- * Animate with timing
- */
-export const animateTiming = (value: any, toValue: number, config: WithTimingConfig = TIMING_CONFIG) => {
-  'worklet';
-  return withTiming(toValue, config);
-};
