@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const ONBOARDING_KEY = '@aafiya_onboarding_completed';
+import { ONBOARDING_COMPLETED_KEY } from '../constants/storageKeys';
 
 export function useOnboarding() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
@@ -13,7 +12,7 @@ export function useOnboarding() {
 
   const checkOnboarding = async () => {
     try {
-      const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+      const value = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
       setHasSeenOnboarding(value === 'true');
     } catch (error) {
       console.error('Failed to check onboarding status:', error);
@@ -25,7 +24,7 @@ export function useOnboarding() {
 
   const completeOnboarding = async () => {
     try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
       setHasSeenOnboarding(true);
     } catch (error) {
       console.error('Failed to save onboarding status:', error);
@@ -34,7 +33,7 @@ export function useOnboarding() {
 
   const resetOnboarding = async () => {
     try {
-      await AsyncStorage.removeItem(ONBOARDING_KEY);
+      await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
       setHasSeenOnboarding(false);
     } catch (error) {
       console.error('Failed to reset onboarding status:', error);

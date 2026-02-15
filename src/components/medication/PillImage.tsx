@@ -25,13 +25,7 @@ const PillImage: React.FC<PillImageProps> = ({ imageUrl, size = 60, medicationNa
     }
 
     let mounted = true;
-    const timeoutId = setTimeout(() => {
-      if (mounted && loading) {
-        // Timeout after 5 seconds
-        setLoading(false);
-        setError(true);
-      }
-    }, 5000);
+    let timeoutId: NodeJS.Timeout;
 
     const loadImage = async () => {
       try {
@@ -50,7 +44,18 @@ const PillImage: React.FC<PillImageProps> = ({ imageUrl, size = 60, medicationNa
           }
         } else {
           // Download and cache
-          setLoading(true);
+          if (mounted) {
+            setLoading(true);
+            
+            // Start timeout after setting loading state
+            timeoutId = setTimeout(() => {
+              if (mounted && loading) {
+                // Timeout after 5 seconds
+                setLoading(false);
+                setError(true);
+              }
+            }, 5000);
+          }
           
           // Ensure cache directory exists
           const dirInfo = await FileSystem.getInfoAsync(cacheDir);
@@ -81,7 +86,9 @@ const PillImage: React.FC<PillImageProps> = ({ imageUrl, size = 60, medicationNa
 
     return () => {
       mounted = false;
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, [imageUrl]);
 

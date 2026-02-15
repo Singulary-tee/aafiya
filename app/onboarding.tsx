@@ -5,8 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Onboarding from '@/src/components/onboarding/Onboarding';
 import { theme } from '@/src/constants/theme';
 import { useTranslation } from 'react-i18next';
-
-const ONBOARDING_KEY = '@aafiya_onboarding_completed';
+import { ONBOARDING_COMPLETED_KEY } from '@/src/constants/storageKeys';
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -35,7 +34,7 @@ export default function OnboardingScreen() {
 
   const handleComplete = async () => {
     try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
       router.replace('/(tabs)/');
     } catch (error) {
       console.error('Failed to save onboarding status:', error);

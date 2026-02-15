@@ -62,7 +62,7 @@
   "network_error_title": "Couldn't load medication data",
   "network_error_message": "This might help:\n• Check your internet connection\n• Try again in a moment",
   "retry": "Retry",
-  "use_cached_data": "Use Cached Data"
+  "use_cached_data": "Use Cached Data",
   "switch_form": "Switch to Different Form",
   "usage_information": "Usage Information",
   "warnings": "Warnings",
