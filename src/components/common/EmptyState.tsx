@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '../primitives/Text';
 import Button from './Button';
@@ -25,22 +26,22 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   style,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <Animated.View entering={FadeIn.duration(300)} style={[styles.container, style]}>
       <View style={styles.iconContainer}>
         <Ionicons name={icon} size={80} color={theme.colors.textSecondary} />
       </View>
       
-      <Text size="title" weight="bold" style={styles.title}>
+      <Text size="large" weight="bold" style={styles.title}>
         {title}
       </Text>
       
-      <Text size="body" style={styles.description}>
+      <Text size="medium" style={styles.description}>
         {description}
       </Text>
       
       {tip && (
         <View style={styles.tipContainer}>
-          <Text size="small" style={styles.tipIcon}>💡</Text>
+          <Text size="medium" style={styles.tipIcon}>💡</Text>
           <Text size="small" style={styles.tipText}>{tip}</Text>
         </View>
       )}
@@ -52,7 +53,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           style={styles.actionButton}
         />
       )}
-    </View>
+    </Animated.View>
   );
 };
 
@@ -61,10 +62,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.xl,
+    padding: theme.spacing.lg,
   },
   iconContainer: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
     opacity: 0.6,
   },
   title: {
@@ -75,21 +76,21 @@ const styles = StyleSheet.create({
   description: {
     textAlign: 'center',
     color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
     lineHeight: 24,
   },
   tipContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.glassSurface,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.md,
-    marginBottom: theme.spacing.lg,
+    borderRadius: theme.radii.standard,
+    marginBottom: theme.spacing.md,
     maxWidth: '90%',
   },
   tipIcon: {
-    marginRight: theme.spacing.xs,
+    marginRight: theme.spacing.sm,
   },
   tipText: {
     color: theme.colors.textSecondary,

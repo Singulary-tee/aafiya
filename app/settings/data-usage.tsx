@@ -54,7 +54,7 @@ export default function DataUsageScreen() {
 
       // Calculate scheduled doses per week
       let scheduledDosesPerWeek = 0;
-      for (const schedule of schedules as any[]) {
+      for (const schedule of schedules as Array<{ times: string }>) {
         const times = JSON.parse(schedule.times || '[]');
         scheduledDosesPerWeek += times.length * 7; // times per day * 7 days
       }

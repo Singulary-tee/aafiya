@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/hooks/useTheme';
+import { theme } from '../../src/constants/theme';
 import { openDatabase } from '../../src/database';
 import { CustomHealthMetricsRepository } from '../../src/database/repositories/CustomHealthMetricsRepository';
 import { CustomHealthMetric, CustomHealthMetricHelpers } from '../../src/database/models/CustomHealthMetrics';
@@ -10,7 +10,6 @@ import { useProfile } from '../../src/hooks/useProfile';
 import { logger } from '../../src/utils/logger';
 
 export default function HealthMetricsScreen() {
-    const theme = useTheme();
     const router = useRouter();
     const { currentProfile } = useProfile();
     

@@ -3,7 +3,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { theme } from '@/src/constants/theme';
-import Card from '@/src/components/common/Card';
+import { GlassCard } from '@/src/components/common/GlassCard';
 import { Text } from '@/src/components/primitives/Text';
 
 type HelperStatus = 'unpaired' | 'pending' | 'paired';
@@ -22,21 +22,21 @@ export function HelperStatusCard({ status }: HelperStatusCardProps) {
     },
     pending: {
       text: t('status_pending'),
-      color: theme.colors.attention,
+      color: theme.colors.warning,
     },
     paired: {
       text: t('status_paired'),
-      color: theme.colors.healthy,
+      color: theme.colors.success,
     },
   };
 
   const config = statusConfig[status];
 
   return (
-    <Card style={styles.container}>
+    <GlassCard intensity={20} padding="md" elevation="level1" style={styles.container}>
       <View style={[styles.statusIndicator, { backgroundColor: config.color }]} />
-      <Text style={{ color: config.color }}>{config.text}</Text>
-    </Card>
+      <Text size="medium" style={{ color: config.color }}>{config.text}</Text>
+    </GlassCard>
   );
 }
 
@@ -44,12 +44,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing.md,
   },
   statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: theme.radii.standard,
+    height: theme.radii.standard,
+    borderRadius: theme.radii.full,
     marginRight: theme.spacing.sm,
   },
 });

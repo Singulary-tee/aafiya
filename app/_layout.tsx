@@ -12,7 +12,8 @@ import { getData, storeData } from '@/src/utils/storage';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { CustomSplashScreen } from '@/src/components/common/CustomSplashScreen';
 
 const AppLayoutInner = () => {
   const { t } = useTranslation(['profiles', 'medications']);
@@ -82,16 +83,22 @@ const AppLayoutInner = () => {
   }, [db, isDbLoading]);
 
   if (!isInitialized || isProfileLoading) {
-    return <ActivityIndicator style={{ flex: 1, justifyContent: 'center' }} />;
+    return (
+      <View style={{ flex: 1 }}>
+        <ActivityIndicator style={{ flex: 1, justifyContent: 'center' }} />
+      </View>
+    );
   }
 
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="profiles/select" options={{ title: t('profiles:select_profile') }} />
-      <Stack.Screen name="profiles/create" options={{ title: t('profiles:create_profile') }} />
-      <Stack.Screen name="medications/add" options={{ title: t('medications:add_medication') }} />
-    </Stack>
+    <>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="profiles/select" options={{ title: t('profiles:select_profile') }} />
+        <Stack.Screen name="profiles/create" options={{ title: t('profiles:create_profile') }} />
+        <Stack.Screen name="medications/add" options={{ title: t('medications:add_medication') }} />
+      </Stack>
+    </>
   );
 };
 
@@ -106,9 +113,12 @@ const AppLayout = () => {
 }
 
 export default function RootLayout() {
+  const { isInitialized } = useAppInit();
+  
   return (
     <DatabaseProvider>
-        <AppLayout />
+      <AppLayout />
+      <CustomSplashScreen isReady={isInitialized} />
     </DatabaseProvider>
   );
 }

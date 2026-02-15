@@ -1,24 +1,44 @@
 
+// Border Radius - Single value: 12dp everywhere
 export const RADII = {
-  sm: 2,
-  md: 8,
-  lg: 16,
-  full: 9999,
+  standard: 12, // 12dp for everything (cards, buttons, inputs, modals, images)
+  full: 9999, // For circular elements
+  // Backward compatibility aliases (all map to standard 12dp)
+  xs: 12,
+  sm: 12,
+  md: 12,
+  lg: 12,
+  xl: 12,
+  xxl: 12,
 };
 
+// Backward compatibility alias
+export const borderRadius = RADII;
+
+// Shadows/Elevation - Two levels only
 export const SHADOWS = {
-  subtle: {
+  // Level 1: Subtle shadow for cards and buttons
+  level1: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
   },
-  strong: {
+  // Level 2: Pronounced shadow for modals and floating actions
+  level2: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  // No shadow
+  none: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
 };

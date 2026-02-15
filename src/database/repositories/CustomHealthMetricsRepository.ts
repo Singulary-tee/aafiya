@@ -75,7 +75,7 @@ export class CustomHealthMetricsRepository {
         limit?: number
     ): Promise<CustomHealthMetric[]> {
         let query = 'SELECT * FROM custom_health_metrics WHERE profile_id = ?';
-        const params: any[] = [profileId];
+        const params: (string | number)[] = [profileId];
 
         if (metricType) {
             query += ' AND metric_type = ?';
@@ -107,7 +107,7 @@ export class CustomHealthMetricsRepository {
         metricType?: string
     ): Promise<CustomHealthMetric[]> {
         let query = 'SELECT * FROM custom_health_metrics WHERE profile_id = ? AND recorded_at BETWEEN ? AND ?';
-        const params: any[] = [profileId, startTime, endTime];
+        const params: (string | number)[] = [profileId, startTime, endTime];
 
         if (metricType) {
             query += ' AND metric_type = ?';

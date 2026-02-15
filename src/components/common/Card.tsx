@@ -10,9 +10,9 @@ const Card: React.FC<ViewProps> = ({ style, ...props }) => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.lg, // Cards often have a larger radius
+    borderRadius: theme.radii.standard,
     padding: theme.spacing.md,
-    ...theme.shadows.subtle, // Applying a pre-defined shadow style
+    ...theme.shadows.level1,
   },
 });
 
