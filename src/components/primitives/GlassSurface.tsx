@@ -1,52 +1,33 @@
 import React from 'react';
-import { View, StyleSheet, ViewProps, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { theme } from '@/src/constants/theme';
 
-interface GlassCardProps extends ViewProps {
+interface GlassSurfaceProps {
   children: React.ReactNode;
+  style?: ViewStyle;
   intensity?: number;
-  padding?: keyof typeof theme.spacing;
-  elevation?: 'level1' | 'level2';
 }
 
 /**
- * GlassCard - Glass morphism card component using expo-blur
+ * GlassSurface - Glass morphism component using expo-blur
  * 
  * Implements glass effect with:
  * - BlurView as background layer
  * - Semi-transparent white background (70-80% opacity)
  * - Subtle border (1px white with 20% opacity)
- * - Soft shadow for depth
+ * - Soft shadow for depth (Level 1)
  * - 12dp border radius
- * 
- * @example
- * <GlassCard intensity={20} padding="md" elevation="level1">
- *   <Text>Content</Text>
- * </GlassCard>
  */
-export const GlassCard: React.FC<GlassCardProps> = ({ 
+export const GlassSurface: React.FC<GlassSurfaceProps> = ({
   children,
-  intensity = 20,
-  padding = 'md',
-  elevation = 'level1',
   style,
-  ...props 
+  intensity = 20,
 }) => {
   return (
-    <View 
-      style={[
-        styles.container,
-        theme.shadows[elevation],
-        style,
-      ]}
-      {...props}
-    >
+    <View style={[styles.container, style]}>
       <BlurView intensity={intensity} style={styles.blurView}>
-        <View style={[
-          styles.content,
-          { padding: theme.spacing[padding] }
-        ]}>
+        <View style={styles.glassContent}>
           {children}
         </View>
       </BlurView>
@@ -58,15 +39,17 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: theme.radii.standard,
     overflow: 'hidden',
+    ...theme.shadows.level1,
   },
   blurView: {
+    flex: 1,
     borderRadius: theme.radii.standard,
   },
-  content: {
+  glassContent: {
+    flex: 1,
     backgroundColor: theme.colors.glassSurface,
     borderWidth: 1,
     borderColor: theme.colors.glassBorder,
     borderRadius: theme.radii.standard,
   },
 });
-

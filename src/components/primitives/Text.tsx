@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Text as RNText, StyleSheet } from 'react-native';
-import { theme } from '../../constants/theme'; // Updated path
+import { theme } from '../../constants/theme';
 import { useCustomFonts } from '../../constants/typography';
 
 type TextProps = RNText['props'] & {
@@ -12,7 +12,7 @@ type TextProps = RNText['props'] & {
 export const Text: React.FC<TextProps> = ({
   children,
   style,
-  size = 'body',
+  size = 'medium',
   weight = 'regular',
   ...props
 }) => {
@@ -20,14 +20,25 @@ export const Text: React.FC<TextProps> = ({
   const fontFamily = getFontFamily(weight);
 
   return (
-    <RNText style={[styles.text, { fontFamily, fontSize: theme.fontSizes[size] }, style]} {...props}>
+    <RNText 
+      style={[
+        styles.text, 
+        { 
+          fontFamily, 
+          fontSize: theme.fontSizes[size],
+          fontWeight: theme.fontWeights[weight],
+        }, 
+        style
+      ]} 
+      {...props}
+    >
       {children}
     </RNText>
   );
 };
 
 const styles = StyleSheet.create({
-    text: {
-      color: theme.colors.textPrimary, // Added default color
-    },
-  });
+  text: {
+    color: theme.colors.textPrimary,
+  },
+});

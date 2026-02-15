@@ -1,58 +1,56 @@
-// Brand Colors - Blue-ish, Purple-ish theme
+// Brand Colors - Glass Morphism Blue-Purple Gradient Theme
 export const BRAND_COLORS = {
-  PRIMARY_BLUE: '#21AFF7',
-  PRIMARY_PURPLE: '#7B68EE',
-  SECONDARY_BLUE: '#2196F3',
-  SECONDARY_PURPLE: '#9D7CFF',
-  ACCENT_ORANGE: '#FF9800',
-  ACCENT_PURPLE: '#C084FC',
+  PRIMARY_BLUE: '#6B8DD6',
+  PRIMARY_PURPLE: '#8B7EC8',
+  SECONDARY_BLUE_LIGHT: '#8FA4DC',
+  SECONDARY_PURPLE_LIGHT: '#A093D1',
 };
 
 // Gradient definitions for brand identity
 export const GRADIENTS = {
-  BRAND_PRIMARY: ['#21AFF7', '#7B68EE'], // Blue to Purple
-  BRAND_SECONDARY: ['#2196F3', '#9D7CFF'], // Lighter Blue to Purple
-  BRAND_SUBTLE: ['#E6F4FE', '#F0E8FF'], // Very light blue to purple (for backgrounds)
-  SPLASH: ['#E6F4FE', '#F0E8FF'], // Splash screen gradient
-  GLASS_OVERLAY: ['rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 0.6)'], // For glassy effect
+  BRAND_PRIMARY: ['#6B8DD6', '#8B7EC8'], // Soft blue to muted purple
+  BRAND_SECONDARY: ['#8FA4DC', '#A093D1'], // Lighter tints
+  BRAND_SUBTLE: ['#E8EDF7', '#EDE9F4'], // Very light for backgrounds
+  SPLASH: ['#E8EDF7', '#EDE9F4'], // Splash screen gradient
 };
 
 export const PRIMARY_COLORS = {
-  PRIMARY: '#21AFF7',
-  SECONDARY: '#7B68EE',
-  ACCENT: '#FF9800',
+  PRIMARY: '#6B8DD6',
+  SECONDARY: '#8B7EC8',
+  ACCENT: '#8FA4DC',
+};
+
+// Semantic colors - Soft tones
+export const SEMANTIC_COLORS = {
+  SUCCESS: '#4CAF50', // Soft green
+  WARNING: '#FFA726', // Soft amber
+  ERROR: '#EF5350', // Soft coral
+  INFO: '#6B8DD6', // Primary blue
 };
 
 export const HEALTH_CIRCLE_COLORS = {
   HEALTHY: '#4CAF50',
-  ATTENTION: '#FFC107',
+  ATTENTION: '#FFA726',
   RISK: '#FF9800',
-  CRITICAL: '#F44336',
+  CRITICAL: '#EF5350',
 };
 
 export const NEUTRAL_COLORS = {
   BACKGROUND: '#F5F7FA',
   SURFACE: '#FFFFFF',
-  TEXT_PRIMARY: '#212121',
-  TEXT_SECONDARY: '#757575',
+  TEXT_PRIMARY: '#212121', // Dark gray
+  TEXT_SECONDARY: '#757575', // Medium gray
   TEXT_TERTIARY: '#9E9E9E',
   DIVIDER: '#E0E0E0',
   BORDER: '#EEEEEE',
 };
 
+// Glass Morphism colors - Using expo-blur with opacity
 export const GLASS_COLORS = {
-  BACKGROUND: 'rgba(245, 247, 250, 0.95)', // Light glass background
-  SURFACE: 'rgba(255, 255, 255, 0.9)', // White glass surface
-  OVERLAY: 'rgba(255, 255, 255, 0.7)', // Lighter overlay
-  BORDER: 'rgba(255, 255, 255, 0.3)', // Glass border
-};
-
-// Semantic color mappings
-export const SEMANTIC_COLORS = {
-  SUCCESS: '#4CAF50',
-  WARNING: '#FFC107',
-  ERROR: '#F44336',
-  INFO: '#2196F3',
+  BACKGROUND: 'rgba(255, 255, 255, 0.75)', // 75% opacity for glass background
+  SURFACE: 'rgba(255, 255, 255, 0.8)', // 80% opacity for glass surface
+  OVERLAY: 'rgba(255, 255, 255, 0.7)', // 70% opacity for overlays
+  BORDER: 'rgba(255, 255, 255, 0.2)', // 20% opacity for borders
 };
 
 // Consolidating all colors for easier import

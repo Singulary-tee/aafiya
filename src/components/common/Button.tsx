@@ -1,9 +1,11 @@
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
+import { StyleSheet, ViewStyle, TextStyle, ActivityIndicator, Pressable } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../constants/theme';
 import { Text } from '../primitives/Text';
+import { triggerHapticFeedback, buttonPressAnimation } from '../../utils/animations';
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 
@@ -31,44 +33,69 @@ const Button: React.FC<ButtonProps> = ({
   accessibilityHint,
 }) => {
   const { t } = useTranslation('common');
+  const scale = useSharedValue(1);
 
-  // Styles are now derived from the theme object
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const handlePressIn = () => {
+    scale.value = withSpring(buttonPressAnimation.pressed, buttonPressAnimation.config);
+    triggerHapticFeedback('light');
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(buttonPressAnimation.released, buttonPressAnimation.config);
+  };
+
+  const handlePress = () => {
+    onPress();
+  };
+
+  // Styles derived from theme
   const variantStyles = {
     primary: {
       button: { backgroundColor: theme.colors.primary },
-      text: { color: theme.colors.surface },
+      text: { color: '#FFFFFF' },
     },
     secondary: {
-      button: { backgroundColor: theme.colors.accent },
-      text: { color: theme.colors.primary },
+      button: { backgroundColor: theme.colors.secondary },
+      text: { color: '#FFFFFF' },
     },
     tertiary: {
-      button: { backgroundColor: 'transparent' },
-      text: { color: theme.colors.primary, textDecorationLine: 'underline' as const },
+      button: { backgroundColor: 'transparent', borderWidth: 1, borderColor: theme.colors.primary },
+      text: { color: theme.colors.primary },
     },
   };
 
   const { button, text } = variantStyles[variant];
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.button, button, style, disabled && styles.disabledButton]}
+    <Pressable
+      onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || title}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
-      {loading ? (
-        <ActivityIndicator 
-          color={variant === 'primary' ? theme.colors.surface : theme.colors.primary}
-          size="small"
-        />
-      ) : (
-        <Text weight="bold" size="small" style={[text, textStyle]}>{t(title)}</Text>
-      )}
-    </TouchableOpacity>
+      <Animated.View style={[styles.button, button, animatedStyle, style, disabled && styles.disabledButton]}>
+        {loading ? (
+          <ActivityIndicator 
+            color={variant === 'tertiary' ? theme.colors.primary : '#FFFFFF'}
+            size="small"
+          />
+        ) : (
+          <Text weight="bold" size="medium" style={[text, textStyle]}>
+            {t(title)}
+          </Text>
+        )}
+      </Animated.View>
+    </Pressable>
   );
 };
 
@@ -76,11 +103,12 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.radii.md,
+    borderRadius: theme.radii.standard,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    minHeight: 44, // Minimum touch target size (accessibility)
+    minHeight: 44,
+    ...theme.shadows.level1,
   },
   disabledButton: {
     opacity: 0.5,
