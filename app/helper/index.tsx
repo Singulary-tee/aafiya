@@ -8,6 +8,7 @@ import { useProfile } from '@/src/hooks/useProfile';
 import { theme } from '@/src/constants/theme';
 import { Text } from '@/src/components/primitives/Text';
 import Button from '@/src/components/common/Button';
+import EmptyState from '@/src/components/common/EmptyState';
 
 export default function HelperModeScreen() {
   const router = useRouter();
@@ -28,7 +29,14 @@ export default function HelperModeScreen() {
             <HelperStatusCard key={helper.id} status='paired' />
           ))
         ) : (
-          <Text style={styles.emptyText}>No helpers added yet.</Text>
+          <EmptyState
+            icon="people-outline"
+            title="No helpers paired"
+            description="Add a helper to enable family monitoring"
+            actionLabel="Add Helper"
+            onAction={() => router.push('/helper/generate')}
+            style={styles.emptyState}
+          />
         )}
       </View>
 
@@ -42,23 +50,32 @@ export default function HelperModeScreen() {
             <HelperStatusCard key={patient.id} status='paired' />
           ))
         ) : (
-          <Text style={styles.emptyText}>Not monitoring any patients.</Text>
+          <EmptyState
+            icon="person-add-outline"
+            title="Not monitoring anyone"
+            description="Scan a patient's QR code to start monitoring their medication adherence"
+            actionLabel="Monitor Patient"
+            onAction={() => router.push('/helper/pair')}
+            style={styles.emptyState}
+          />
         )}
       </View>
 
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Add Helper (Generate QR)"
-          onPress={() => router.push('/helper/generate')}
-          style={styles.button}
-        />
-        <Button
-          title="Monitor Patient (Scan QR)"
-          onPress={() => router.push('/helper/pair')}
-          variant="secondary"
-          style={styles.button}
-        />
-      </View>
+      {(helpers.length > 0 || patients.length > 0) && (
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Add Helper (Generate QR)"
+            onPress={() => router.push('/helper/generate')}
+            style={styles.button}
+          />
+          <Button
+            title="Monitor Patient (Scan QR)"
+            onPress={() => router.push('/helper/pair')}
+            variant="secondary"
+            style={styles.button}
+          />
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -86,6 +103,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.small,
     color: theme.colors.textSecondary,
     marginBottom: theme.spacing.md,
+  },
+  emptyState: {
+    minHeight: 200,
   },
   emptyText: {
     textAlign: 'center',
