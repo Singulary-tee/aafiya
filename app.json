@@ -59,7 +59,7 @@
           "icon": "./assets/images/notification-icon.png",
           "color": "#21AFF7",
           "sounds": [
-            "./assets/sounds/pill-reminder.wav"
+            "./assets/sounds/pill_reminder.wav"
           ],
           "mode": "production"
         }
