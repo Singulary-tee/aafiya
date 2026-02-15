@@ -11,6 +11,7 @@ import { ProfileRepository } from '@/src/database/repositories/ProfileRepository
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
 import { DoseLogRepository } from '@/src/database/repositories/DoseLogRepository';
 import { HelperPairingRepository } from '@/src/database/repositories/HelperPairingRepository';
+import { exportAllData, importData } from '@/src/utils/dataExport';
 
 interface DataStats {
   profilesCount: number;
@@ -94,11 +95,39 @@ export default function DataUsageScreen() {
   };
 
   const handleExportData = async () => {
-    Alert.alert(
-      t('export_data'),
-      'Export functionality coming soon',
-      [{ text: t('cancel') }]
-    );
+    if (!db) return;
+
+    try {
+      const filePath = await exportAllData(db);
+      if (filePath) {
+        Alert.alert(
+          'Success',
+          `${t('data_exported')}\n\nFile saved to: ${filePath}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to export data');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      Alert.alert('Error', 'Failed to export data');
+    }
+  };
+
+  const handleImportData = async () => {
+    if (!db) return;
+
+    try {
+      // Import functionality would require file picker
+      Alert.alert(
+        t('import_data'),
+        'Import functionality coming soon',
+        [{ text: t('cancel') }]
+      );
+    } catch (error) {
+      console.error('Import error:', error);
+      Alert.alert('Error', 'Failed to import data');
+    }
   };
 
   const handleDeleteAllData = () => {

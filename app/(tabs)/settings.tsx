@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,10 +9,68 @@ import { LanguageSwitcher } from '@/src/components/settings/LanguageSwitcher';
 import { FontSwitcher } from '@/src/components/settings/FontSwitcher';
 import { theme } from '@/src/constants/theme';
 import { APP_CONFIG } from '@/src/constants/config';
+import { useDatabase } from '@/src/hooks/useDatabase';
+import { exportAllData } from '@/src/utils/dataExport';
 
 export default function SettingsScreen() {
   const { t } = useTranslation(['settings']);
   const router = useRouter();
+  const { db } = useDatabase();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [autoRefillEnabled, setAutoRefillEnabled] = useState(false);
+
+  const handleExportData = async () => {
+    if (!db) return;
+
+    try {
+      const filePath = await exportAllData(db);
+      if (filePath) {
+        Alert.alert(
+          'Success',
+          `${t('data_exported')}\n\nFile saved to:\n${filePath}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to export data');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      Alert.alert('Error', 'Failed to export data');
+    }
+  };
+
+  const handleImportData = () => {
+    Alert.alert(
+      t('import_data'),
+      'Import functionality coming soon',
+      [{ text: t('cancel') }]
+    );
+  };
+
+  const handleClearCache = async () => {
+    if (!db) return;
+
+    Alert.alert(
+      t('clear_cache'),
+      'Are you sure you want to clear the cache?',
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('clear_cache'),
+          onPress: async () => {
+            try {
+              await db.runAsync('DELETE FROM api_cache');
+              Alert.alert('Success', t('cache_cleared'));
+            } catch (error) {
+              console.error('Error clearing cache:', error);
+              Alert.alert('Error', 'Failed to clear cache');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -28,8 +86,13 @@ export default function SettingsScreen() {
       <SettingsSection title={t('notifications')}>
         <SettingsItem 
           label={t('enable_notifications')}
-          onPress={() => {}}
-          rightElement={<Switch value={true} onValueChange={() => {}} />}
+          onPress={() => setNotificationsEnabled(!notificationsEnabled)}
+          rightElement={
+            <Switch 
+              value={notificationsEnabled} 
+              onValueChange={setNotificationsEnabled} 
+            />
+          }
         />
         <SettingsItem 
           label={t('default_grace_period')}
@@ -38,8 +101,13 @@ export default function SettingsScreen() {
         />
         <SettingsItem 
           label={t('vibrate')}
-          onPress={() => {}}
-          rightElement={<Switch value={true} onValueChange={() => {}} />}
+          onPress={() => setVibrationEnabled(!vibrationEnabled)}
+          rightElement={
+            <Switch 
+              value={vibrationEnabled} 
+              onValueChange={setVibrationEnabled} 
+            />
+          }
         />
       </SettingsSection>
 
@@ -52,8 +120,13 @@ export default function SettingsScreen() {
         />
         <SettingsItem 
           label={t('auto_refill_reminder')}
-          onPress={() => {}}
-          rightElement={<Switch value={false} onValueChange={() => {}} />}
+          onPress={() => setAutoRefillEnabled(!autoRefillEnabled)}
+          rightElement={
+            <Switch 
+              value={autoRefillEnabled} 
+              onValueChange={setAutoRefillEnabled} 
+            />
+          }
         />
       </SettingsSection>
 
@@ -62,17 +135,17 @@ export default function SettingsScreen() {
         <SettingsItem 
           label={t('export_data')}
           icon="download-outline"
-          onPress={() => {}}
+          onPress={handleExportData}
         />
         <SettingsItem 
           label={t('import_data')}
           icon="cloud-upload-outline"
-          onPress={() => {}}
+          onPress={handleImportData}
         />
         <SettingsItem 
           label={t('clear_cache')}
           icon="trash-outline"
-          onPress={() => {}}
+          onPress={handleClearCache}
         />
       </SettingsSection>
 
