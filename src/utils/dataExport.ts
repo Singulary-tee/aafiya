@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system';
 import { SQLiteDatabase } from 'expo-sqlite';
 import { logger } from './logger';
 import { Alert, Platform } from 'react-native';
+import { APP_CONFIG } from '../constants/config';
 
 /**
  * Export all app data to a JSON file
@@ -19,7 +20,7 @@ export async function exportAllData(db: SQLiteDatabase): Promise<string | null> 
     const helperPairings = await db.getAllAsync('SELECT * FROM helper_pairing');
 
     const exportData = {
-      version: '1.0.0',
+      version: APP_CONFIG.VERSION,
       exportDate: new Date().toISOString(),
       data: {
         profiles,
@@ -87,7 +88,7 @@ export async function exportMedicationStats(
     const adherenceRate = totalDoses > 0 ? (takenDoses / totalDoses) * 100 : 0;
 
     const statsData = {
-      version: '1.0.0',
+      version: APP_CONFIG.VERSION,
       exportDate: new Date().toISOString(),
       medication,
       schedules,
@@ -172,7 +173,7 @@ export async function exportProfile(
     );
 
     const exportData = {
-      version: '1.0.0',
+      version: APP_CONFIG.VERSION,
       exportDate: new Date().toISOString(),
       profile,
       data: {
@@ -273,6 +274,35 @@ export async function importData(
           [log.id, log.schedule_id, log.medication_id, log.profile_id, log.status,
            log.scheduled_time, log.actual_time, log.notes, log.is_auto_marked_missed,
            log.created_at, log.updated_at]
+        );
+      }
+    }
+
+    // Import health metrics
+    if (healthMetrics && Array.isArray(healthMetrics)) {
+      for (const metric of healthMetrics) {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO health_metrics (id, profile_id, medication_id, health_score, 
+           streak_days, last_dose_time, adherence_percentage, missed_doses_count, late_doses_count, 
+           skipped_doses_count, total_doses_expected, calculated_at, period_start, period_end) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [metric.id, metric.profile_id, metric.medication_id, metric.health_score,
+           metric.streak_days, metric.last_dose_time, metric.adherence_percentage, metric.missed_doses_count,
+           metric.late_doses_count, metric.skipped_doses_count, metric.total_doses_expected,
+           metric.calculated_at, metric.period_start, metric.period_end]
+        );
+      }
+    }
+
+    // Import helper pairings
+    if (helperPairings && Array.isArray(helperPairings)) {
+      for (const pairing of helperPairings) {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO helper_pairing (id, profile_id, pairing_key, helper_device_id, 
+           helper_name, is_active, created_at, updated_at) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [pairing.id, pairing.profile_id, pairing.pairing_key, pairing.helper_device_id,
+           pairing.helper_name, pairing.is_active, pairing.created_at, pairing.updated_at]
         );
       }
     }

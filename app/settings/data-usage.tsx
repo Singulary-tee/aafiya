@@ -11,7 +11,7 @@ import { ProfileRepository } from '@/src/database/repositories/ProfileRepository
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
 import { DoseLogRepository } from '@/src/database/repositories/DoseLogRepository';
 import { HelperPairingRepository } from '@/src/database/repositories/HelperPairingRepository';
-import { exportAllData, importData } from '@/src/utils/dataExport';
+import { exportAllData } from '@/src/utils/dataExport';
 
 interface DataStats {
   profilesCount: number;
@@ -140,8 +140,25 @@ export default function DataUsageScreen() {
           text: t('delete'),
           style: 'destructive',
           onPress: async () => {
-            // TODO: Implement delete all data
-            Alert.alert('Success', t('data_deleted'));
+            if (!db) return;
+            
+            try {
+              // Delete all data from all tables
+              await db.runAsync('DELETE FROM dose_log');
+              await db.runAsync('DELETE FROM schedules');
+              await db.runAsync('DELETE FROM medications');
+              await db.runAsync('DELETE FROM health_metrics');
+              await db.runAsync('DELETE FROM helper_pairing');
+              await db.runAsync('DELETE FROM profiles');
+              await db.runAsync('DELETE FROM api_cache');
+              
+              Alert.alert('Success', t('data_deleted'));
+              // Reload stats to show empty state
+              loadStats();
+            } catch (error) {
+              console.error('Error deleting data:', error);
+              Alert.alert('Error', 'Failed to delete data');
+            }
           },
         },
       ]
