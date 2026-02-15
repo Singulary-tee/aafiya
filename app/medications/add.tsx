@@ -1,7 +1,7 @@
 import { useProfile } from '@/src/hooks/useProfile';
 import { logger } from '@/src/utils/logger';
 import { validateCount, validateMedicationName, validateScheduleTimes } from '@/src/utils/validation';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -38,6 +38,13 @@ const debounce = <T extends (...args: any[]) => void>(fn: T, delayMs: number) =>
 };
 
 export default function AddMedicationScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { activeProfile } = useProfile();
+  const { db, isLoading: isDbLoading } = useDatabase();
+  const { schedule } = useNotifications();
+  const { t } = useTranslation(['medications']);
+
   const [entryMode, setEntryMode] = useState<'search' | 'manual'>('search');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MedicationGroup[]>([]);
@@ -56,13 +63,19 @@ export default function AddMedicationScreen() {
   const [intervalHours, setIntervalHours] = useState('8');
   const [intervalStartTime, setIntervalStartTime] = useState('08:00');
 
-  const router = useRouter();
-  const { activeProfile } = useProfile();
-  const { db, isLoading: isDbLoading } = useDatabase();
-  const { schedule } = useNotifications();
-  const { t } = useTranslation(['medications']);
-
   const { addMedication, isLoading: isAddingMedication } = useMedications(activeProfile?.id || null);
+
+  // Handle incoming variant selection from variants screen
+  useEffect(() => {
+    if (params.selectedRxcui && params.selectedName) {
+      setSelectedDrug({
+        rxcui: params.selectedRxcui as string,
+        name: params.selectedName as string,
+        synonym: params.selectedName as string,
+      });
+      setSearchQuery(params.selectedName as string);
+    }
+  }, [params.selectedRxcui, params.selectedName]);
 
   const hasSelection = useMemo(() => Boolean(selectedDrug || isManualConfirmed), [selectedDrug, isManualConfirmed]);
   const selectedName = useMemo(() => selectedDrug?.name ?? manualName.trim(), [selectedDrug, manualName]);

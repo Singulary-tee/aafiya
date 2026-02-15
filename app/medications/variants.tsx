@@ -27,10 +27,14 @@ export default function VariantSelectionScreen() {
   }, [variantsParam]);
 
   const handleSelectVariant = (variant: DrugConcept) => {
-    // Navigate back to add screen with selected drug
-    router.back();
-    // TODO: Pass selected variant back to add screen
-    // This will be handled via state management or navigation params
+    // Navigate back to add screen with selected drug as URL parameter
+    router.replace({
+      pathname: '/medications/add',
+      params: {
+        selectedRxcui: variant.rxcui,
+        selectedName: variant.name,
+      }
+    });
   };
 
   const renderVariant = ({ item }: { item: DrugConcept }) => {
