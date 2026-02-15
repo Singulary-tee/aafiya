@@ -12,6 +12,7 @@ export type PairingStatus = 'pending' | 'active' | 'inactive' | 'expired';
 export interface HelperPairing {
     id: string;
     profile_id: string;
+    helper_profile_id: string | null;
     pairing_code: string;
     helper_name: string | null;
     status: PairingStatus;
@@ -33,6 +34,7 @@ export interface HelperPairingInput {
  * Data that can be updated on an existing helper pairing.
  */
 export type HelperPairingUpdate = Partial<{
+    helper_profile_id: string | null;
     helper_name: string | null;
     status: PairingStatus;
 }>;
@@ -55,6 +57,7 @@ export class HelperPairingRepository {
         const newPairing: HelperPairing = {
             id: generateUUID(),
             profile_id: input.profile_id,
+            helper_profile_id: null,
             pairing_code: input.pairing_code,
             helper_name: null,
             status: 'pending',
@@ -64,11 +67,12 @@ export class HelperPairingRepository {
         };
 
         await this.db.runAsync(
-            `INSERT INTO helper_pairing (id, profile_id, pairing_code, helper_name, status, expires_at, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+            `INSERT INTO helper_pairing (id, profile_id, helper_profile_id, pairing_code, helper_name, status, expires_at, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
                 newPairing.id,
                 newPairing.profile_id,
+                newPairing.helper_profile_id,
                 newPairing.pairing_code,
                 newPairing.helper_name,
                 newPairing.status,
@@ -114,6 +118,26 @@ export class HelperPairingRepository {
     async findAllByProfileId(profileId: string, status?: PairingStatus): Promise<HelperPairing[]> {
         let query = 'SELECT * FROM helper_pairing WHERE profile_id = ?';
         const params: any[] = [profileId];
+
+        if (status) {
+            query += ' AND status = ?';
+            params.push(status);
+        }
+
+        query += ' ORDER BY created_at DESC;';
+
+        return this.db.getAllAsync<HelperPairing>(query, params);
+    }
+
+    /**
+     * Finds all pairings where the user is a helper.
+     * @param helperProfileId The ID of the helper profile.
+     * @param status Optional filter by pairing status.
+     * @returns A list of matching pairings where this profile is the helper.
+     */
+    async findAllByHelperProfileId(helperProfileId: string, status?: PairingStatus): Promise<HelperPairing[]> {
+        let query = 'SELECT * FROM helper_pairing WHERE helper_profile_id = ?';
+        const params: any[] = [helperProfileId];
 
         if (status) {
             query += ' AND status = ?';

@@ -121,15 +121,18 @@ const applyMigrations = async (db: SQLite.SQLiteDatabase) => {
                 CREATE TABLE IF NOT EXISTS helper_pairing (
                     id TEXT PRIMARY KEY,
                     profile_id TEXT NOT NULL,
+                    helper_profile_id TEXT,
                     pairing_code TEXT NOT NULL,
                     helper_name TEXT,
                     status TEXT NOT NULL DEFAULT 'pending',
                     expires_at INTEGER NOT NULL,
                     created_at INTEGER NOT NULL,
                     updated_at INTEGER NOT NULL,
-                    FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+                    FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE,
+                    FOREIGN KEY (helper_profile_id) REFERENCES profiles(id) ON DELETE CASCADE
                 );
                 CREATE INDEX IF NOT EXISTS idx_helper_pairing_profile ON helper_pairing(profile_id);
+                CREATE INDEX IF NOT EXISTS idx_helper_pairing_helper_profile ON helper_pairing(helper_profile_id);
                 CREATE INDEX IF NOT EXISTS idx_helper_pairing_code ON helper_pairing(pairing_code);
 
                 -- Update schema version

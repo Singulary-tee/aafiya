@@ -14,6 +14,8 @@ const SECURE_KEY_PREFIX = 'secure_channel_key_';
 export function useHelperMode(profileId: string) {
     const { db, isLoading } = useDatabase();
     const [pairing, setPairing] = useState<HelperPairing | null>(null);
+    const [helpers, setHelpers] = useState<HelperPairing[]>([]);
+    const [patients, setPatients] = useState<HelperPairing[]>([]);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [isPaired, setIsPaired] = useState<boolean>(false);
 
@@ -21,19 +23,29 @@ export function useHelperMode(profileId: string) {
     const profileRepo = useMemo(() => db ? new ProfileRepository(db) : null, [db]);
 
     useEffect(() => {
-        const loadPairing = async () => {
+        const loadPairings = async () => {
             if (!isLoading && db && profileId && pairingRepo && profileRepo) {
-                const manager = new HelperConnectionManager(pairingRepo, profileRepo);
+                // Load helpers (this user is the primary, others are helpers)
+                const myHelpers = await pairingRepo.findAllByProfileId(profileId, 'active');
+                setHelpers(myHelpers);
 
-                const existingPairings = await manager.findActivePairings(profileId);
-                if (existingPairings.length > 0) {
-                    setPairing(existingPairings[0]);
-                    setIsPaired(true);
-                    logger.log('Existing helper pairing loaded.');
+                // Load patients (this user is a helper for others)
+                const myPatients = await pairingRepo.findAllByHelperProfileId(profileId, 'active');
+                setPatients(myPatients);
+
+                const totalPairings = myHelpers.length + myPatients.length;
+                setIsPaired(totalPairings > 0);
+                
+                if (myHelpers.length > 0) {
+                    setPairing(myHelpers[0]);
+                } else if (myPatients.length > 0) {
+                    setPairing(myPatients[0]);
                 }
+                
+                logger.log(`Loaded ${myHelpers.length} helpers and ${myPatients.length} patients.`);
             }
         };
-        loadPairing();
+        loadPairings();
     }, [db, profileId, isLoading, pairingRepo, profileRepo]);
 
     const generatePairingData = useCallback(async () => {
@@ -47,10 +59,16 @@ export function useHelperMode(profileId: string) {
             const pairingCode = await manager.initiatePairing(profileId);
             const encryptionKey = await secureChannel.establishChannel(pairingCode);
 
-            const payload = JSON.stringify({ pairingId: pairingCode, encryptionKey, profileId });
+            // Store the profile info with the pairing code for later use
+            const pairingData = { 
+                pairingCode, 
+                encryptionKey, 
+                profileId,
+                timestamp: Date.now()
+            };
 
-            const qrCodeGenerator = new QRCodeGenerator();
-            const qrData = qrCodeGenerator.generateQRCodeData(payload);
+            // Generate QR code data - pass as JSON string directly
+            const qrData = JSON.stringify(pairingData);
 
             setQrCode(qrData);
             logger.log('QR code for helper pairing generated successfully.');
@@ -64,7 +82,8 @@ export function useHelperMode(profileId: string) {
 
         try {
             logger.log('Attempting to pair with primary user from QR code data.');
-            const { pairingId: pairingCode, encryptionKey, profileId: primaryProfileId } = JSON.parse(qrCodeData);
+            const parsedData = JSON.parse(qrCodeData);
+            const { pairingCode, encryptionKey, profileId: primaryProfileId } = parsedData;
 
             if (!pairingCode || !encryptionKey || !primaryProfileId) {
                 throw new Error('Invalid QR code data.');
@@ -80,38 +99,71 @@ export function useHelperMode(profileId: string) {
             const storageKey = `${SECURE_KEY_PREFIX}${pairingCode}`;
             await storeSecureData(storageKey, encryptionKey);
 
-            const newPairingId = await manager.confirmPairing("", pairingCode, 'My Helper');
+            // Confirm pairing - the helper's profile ID and primary user's pairing code
+            await manager.confirmPairing(profileId, pairingCode, 'My Helper');
             
-            const newPairing = await pairingRepo.findById(newPairingId);
+            const newPairing = await pairingRepo.findByCode(pairingCode);
 
-            setPairing(newPairing);
-            setIsPaired(true);
+            if (newPairing) {
+                setPatients([newPairing, ...patients]);
+                setPairing(newPairing);
+                setIsPaired(true);
+            }
             setQrCode(null);
             logger.log(`Successfully paired with primary user: ${primaryProfileId}`);
         } catch (error) {
             logger.error('Failed to pair with primary user:', error);
+            throw error;
         }
-    }, [db, isLoading, pairingRepo, profileRepo]);
+    }, [db, profileId, isLoading, pairingRepo, profileRepo, patients]);
 
-    const unpair = useCallback(async () => {
-        if (isLoading || !db || !pairing || !pairingRepo || !profileRepo) return;
+    const unpair = useCallback(async (pairingId?: string) => {
+        if (isLoading || !db || !pairingRepo || !profileRepo) return;
+
+        const targetPairingId = pairingId || pairing?.id;
+        if (!targetPairingId) return;
 
         try {
-            logger.log(`Unpairing from pairing ID: ${pairing.id}`);
+            logger.log(`Unpairing from pairing ID: ${targetPairingId}`);
+            const targetPairing = await pairingRepo.findById(targetPairingId);
+            if (!targetPairing) {
+                throw new Error('Pairing not found');
+            }
+
             const manager = new HelperConnectionManager(pairingRepo, profileRepo);
             const secureChannel = new SecureChannel();
 
-            await manager.unpair(pairing.id);
-            await secureChannel.terminateChannel(pairing.pairing_code);
+            await manager.unpair(targetPairingId);
+            await secureChannel.terminateChannel(targetPairing.pairing_code);
 
-            setPairing(null);
-            setIsPaired(false);
+            // Remove from local state
+            setHelpers(helpers.filter(h => h.id !== targetPairingId));
+            setPatients(patients.filter(p => p.id !== targetPairingId));
+            
+            const remainingHelpers = helpers.filter(h => h.id !== targetPairingId);
+            const remainingPatients = patients.filter(p => p.id !== targetPairingId);
+            
+            if (pairing?.id === targetPairingId) {
+                setPairing(null);
+            }
+            
+            setIsPaired(remainingHelpers.length > 0 || remainingPatients.length > 0);
             setQrCode(null);
             logger.log('Successfully unpaired.');
         } catch (error) {
             logger.error('Failed to unpair:', error);
+            throw error;
         }
-    }, [db, pairing, isLoading, pairingRepo, profileRepo]);
+    }, [db, pairing, helpers, patients, isLoading, pairingRepo, profileRepo]);
 
-    return { isPaired, qrCode, pairing, generatePairingData, pairWithPrimary, unpair };
+    return { 
+        isPaired, 
+        qrCode, 
+        pairing, 
+        helpers,
+        patients,
+        generatePairingData, 
+        pairWithPrimary, 
+        unpair 
+    };
 }

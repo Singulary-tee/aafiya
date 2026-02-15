@@ -77,6 +77,12 @@
       "expo-sqlite",
       "expo-localization",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Camera access is required to scan QR codes for helper pairing."
+        }
+      ],
+      [
         "expo-barcode-scanner",
         {
           "cameraPermission": "Camera access is required to scan QR codes for helper pairing."

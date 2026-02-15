@@ -12,28 +12,51 @@ import Button from '@/src/components/common/Button';
 export default function HelperModeScreen() {
   const router = useRouter();
   const { activeProfile } = useProfile();
-  const { pairing, isPaired } = useHelperMode(activeProfile?.id || '');
+  const { helpers, patients } = useHelperMode(activeProfile?.id || '');
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Helper Mode</Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Paired Patients</Text>
-        {isPaired && pairing && (
-          <HelperStatusCard
-            status='paired'
-          />
+        <Text style={styles.sectionTitle}>My Helpers</Text>
+        <Text style={styles.sectionDescription}>
+          People who can monitor your medication adherence
+        </Text>
+        {helpers.length > 0 ? (
+          helpers.map((helper) => (
+            <HelperStatusCard key={helper.id} status='paired' />
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No helpers added yet.</Text>
         )}
-        {!isPaired && (
-          <Text style={styles.emptyText}>No paired patients found.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Patients I'm Monitoring</Text>
+        <Text style={styles.sectionDescription}>
+          People whose medication adherence you monitor
+        </Text>
+        {patients.length > 0 ? (
+          patients.map((patient) => (
+            <HelperStatusCard key={patient.id} status='paired' />
+          ))
+        ) : (
+          <Text style={styles.emptyText}>Not monitoring any patients.</Text>
         )}
       </View>
 
       <View style={styles.buttonContainer}>
         <Button
-          title="Add Patient (Scan QR)"
+          title="Add Helper (Generate QR)"
+          onPress={() => router.push('/helper/generate')}
+          style={styles.button}
+        />
+        <Button
+          title="Monitor Patient (Scan QR)"
           onPress={() => router.push('/helper/pair')}
+          variant="secondary"
+          style={styles.button}
         />
       </View>
     </ScrollView>
@@ -52,19 +75,28 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   section: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
   sectionTitle: {
     fontSize: theme.fontSizes.subheading,
     fontWeight: '600',
+    marginBottom: theme.spacing.sm,
+  },
+  sectionDescription: {
+    fontSize: theme.fontSizes.small,
+    color: theme.colors.textSecondary,
     marginBottom: theme.spacing.md,
   },
   emptyText: {
     textAlign: 'center',
     color: theme.colors.textSecondary,
     marginTop: theme.spacing.md,
+    fontStyle: 'italic',
   },
   buttonContainer: {
     marginTop: theme.spacing.md,
+  },
+  button: {
+    marginBottom: theme.spacing.sm,
   },
 });
