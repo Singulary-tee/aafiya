@@ -1,4 +1,4 @@
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, Dimensions } from 'react-native';
 import { theme } from './theme';
 
 /**
@@ -42,12 +42,12 @@ export const glassEffect = (variant: 'light' | 'medium' | 'dark' = 'light'): Vie
     backgroundColor: getColor('surface', opacities[variant]),
     borderWidth: 1,
     borderColor: theme.colors.glassBorder,
-    ...theme.shadows.glass,
+    ...theme.shadows.level1,
   };
 };
 
 /**
- * Create a gradient text style (for future use with react-native-linear-gradient Text)
+ * Create a gradient text style
  */
 export const gradientTextColors = (gradient: keyof typeof theme.gradients): string[] => {
   return theme.gradients[gradient];
@@ -55,46 +55,45 @@ export const gradientTextColors = (gradient: keyof typeof theme.gradients): stri
 
 /**
  * Create responsive spacing based on screen size
- * TODO: Implement actual responsive logic with Dimensions API
- * Currently returns medium spacing for all screen sizes
  */
 export const responsiveSpacing = (
   small: keyof typeof theme.spacing,
   medium: keyof typeof theme.spacing,
   large: keyof typeof theme.spacing
-) => {
-  // Placeholder - implement with Dimensions.get('window').width
-  return theme.spacing[medium];
+): number => {
+  const screenWidth = Dimensions.get('window').width;
+  
+  // Breakpoints: small < 375, medium < 768, large >= 768
+  if (screenWidth < 375) {
+    return theme.spacing[small];
+  } else if (screenWidth < 768) {
+    return theme.spacing[medium];
+  } else {
+    return theme.spacing[large];
+  }
 };
 
 /**
- * Mix two colors
- * TODO: Implement proper color mixing with a color manipulation library
- * This is a placeholder implementation
+ * Create a card style with optional variant
  */
-export const mixColors = (color1: string, color2: string, ratio: number = 0.5): string => {
-  // Placeholder - use a library like tinycolor2 or chroma-js for proper color mixing
-  console.warn('mixColors is a placeholder and does not actually mix colors');
-  return ratio > 0.5 ? color2 : color1;
-};
 export const cardStyle = (variant: 'default' | 'glass' | 'elevated' = 'default'): ViewStyle => {
   const variants = {
     default: {
       backgroundColor: theme.colors.surface,
-      borderRadius: theme.radii.lg,
+      borderRadius: theme.radii.standard,
       padding: theme.spacing.md,
-      ...theme.shadows.subtle,
+      ...theme.shadows.level1,
     },
     glass: {
       ...glassEffect('light'),
-      borderRadius: theme.radii.lg,
+      borderRadius: theme.radii.standard,
       padding: theme.spacing.md,
     },
     elevated: {
       backgroundColor: theme.colors.surface,
-      borderRadius: theme.radii.lg,
+      borderRadius: theme.radii.standard,
       padding: theme.spacing.md,
-      ...theme.shadows.strong,
+      ...theme.shadows.level2,
     },
   };
 

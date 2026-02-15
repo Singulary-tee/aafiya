@@ -117,7 +117,7 @@ export class HelperPairingRepository {
      */
     async findAllByProfileId(profileId: string, status?: PairingStatus): Promise<HelperPairing[]> {
         let query = 'SELECT * FROM helper_pairing WHERE profile_id = ?';
-        const params: any[] = [profileId];
+        const params: (string | PairingStatus)[] = [profileId];
 
         if (status) {
             query += ' AND status = ?';
@@ -137,7 +137,7 @@ export class HelperPairingRepository {
      */
     async findAllByHelperProfileId(helperProfileId: string, status?: PairingStatus): Promise<HelperPairing[]> {
         let query = 'SELECT * FROM helper_pairing WHERE helper_profile_id = ?';
-        const params: any[] = [helperProfileId];
+        const params: (string | PairingStatus)[] = [helperProfileId];
 
         if (status) {
             query += ' AND status = ?';

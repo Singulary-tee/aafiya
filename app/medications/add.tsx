@@ -25,7 +25,7 @@ import { DrugConcept, RxNormConceptGroup } from '@/src/types/api';
 import { MedicationGroup } from '@/src/types/medication';
 import { groupMedications, parseMedicationName } from '@/src/utils/medicationGrouping';
 
-const debounce = <T extends (...args: any[]) => void>(fn: T, delayMs: number) => {
+const debounce = <T extends (...args: unknown[]) => void>(fn: T, delayMs: number) => {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
   return (...args: Parameters<T>) => {

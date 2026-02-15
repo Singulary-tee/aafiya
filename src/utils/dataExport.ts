@@ -144,11 +144,11 @@ export async function exportProfile(
       [profileId]
     );
 
-    const medicationIds = (medications as any[]).map((m) => m.id);
+    const medicationIds = (medications as Array<{ id: string }>).map((m) => m.id);
 
     // Get schedules for all medications
-    const schedules: any[] = [];
-    const doseLogs: any[] = [];
+    const schedules: unknown[] = [];
+    const doseLogs: unknown[] = [];
     for (const medId of medicationIds) {
       const medSchedules = await db.getAllAsync(
         'SELECT * FROM schedules WHERE medication_id = ?',
