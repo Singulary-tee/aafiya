@@ -8,6 +8,7 @@ import PillImage from '@/src/components/medication/PillImage';
 import { theme } from '@/src/constants/theme';
 import { DrugConcept } from '@/src/types/api';
 import { parseMedicationName, isBrandName } from '@/src/utils/medicationGrouping';
+import { logger } from '@/src/utils/logger';
 
 export default function VariantSelectionScreen() {
   const { groupName, variants: variantsParam } = useLocalSearchParams();
@@ -21,7 +22,7 @@ export default function VariantSelectionScreen() {
         const parsedVariants = JSON.parse(variantsParam as string);
         setVariants(parsedVariants);
       } catch (error) {
-        console.error('Failed to parse variants:', error);
+        logger.error('Failed to parse variants:', error);
       }
     }
   }, [variantsParam]);

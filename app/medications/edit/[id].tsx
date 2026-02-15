@@ -158,12 +158,12 @@ export default function EditMedicationScreen() {
 
         {/* Notes Section */}
         <View style={styles.section}>
-          <Text style={styles.label}>{t('notes')}</Text>
+          <Text style={styles.label}>{t('details.notes')}</Text>
           <TextInput
             style={[styles.input, styles.notesInput]}
             value={notes}
             onChangeText={setNotes}
-            placeholder={t('notes')}
+            placeholder={t('details.notes')}
             multiline
             numberOfLines={4}
           />

@@ -139,6 +139,11 @@ export function isBrandName(name: string): boolean {
   const parsed = parseMedicationName(name);
   const base = parsed.baseName;
   
+  // Check if base is empty
+  if (!base || base.length === 0) {
+    return false;
+  }
+  
   // Brand names typically:
   // 1. Start with capital letter
   // 2. Don't contain common generic suffixes

@@ -98,7 +98,7 @@ export default function AddMedicationScreen() {
         const apiCacheRepo = new ApiCacheRepository(db);
         const rxNormService = new RxNormService(apiCacheRepo);
         const results = await rxNormService.findDrugsByName(query);
-        // Get all concepts from the API
+        // Get all concepts from the API and group by base name
         const concepts = results?.drugGroup.conceptGroup?.flatMap((cg: RxNormConceptGroup) => cg.conceptProperties).filter((c): c is DrugConcept => !!c) || [];
         // Group medications by base name
         const grouped = groupMedications(concepts);
