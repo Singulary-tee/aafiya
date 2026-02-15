@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 // Hook Import
 import { useMedications } from '@/src/hooks/useMedications';
@@ -19,6 +20,8 @@ import { ApiCacheRepository } from '@/src/database/repositories/ApiCacheReposito
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { RxNormService } from '@/src/services/api/RxNormService';
 import { DrugConcept, RxNormConceptGroup } from '@/src/types/api';
+import { MedicationGroup } from '@/src/types/medication';
+import { groupMedications } from '@/src/utils/medicationGrouping';
 
 const debounce = <T extends (...args: any[]) => void>(fn: T, delayMs: number) => {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -37,7 +40,7 @@ const debounce = <T extends (...args: any[]) => void>(fn: T, delayMs: number) =>
 export default function AddMedicationScreen() {
   const [entryMode, setEntryMode] = useState<'search' | 'manual'>('search');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<DrugConcept[]>([]);
+  const [searchResults, setSearchResults] = useState<MedicationGroup[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedDrug, setSelectedDrug] = useState<DrugConcept | null>(null);
   const [manualName, setManualName] = useState('');
@@ -75,9 +78,11 @@ export default function AddMedicationScreen() {
         const apiCacheRepo = new ApiCacheRepository(db);
         const rxNormService = new RxNormService(apiCacheRepo);
         const results = await rxNormService.findDrugsByName(query);
-        // Directly use the concepts from the API without any faulty grouping
+        // Get all concepts from the API
         const concepts = results?.drugGroup.conceptGroup?.flatMap((cg: RxNormConceptGroup) => cg.conceptProperties).filter((c): c is DrugConcept => !!c) || [];
-        setSearchResults(concepts);
+        // Group medications by base name
+        const grouped = groupMedications(concepts);
+        setSearchResults(grouped);
 
       } catch (error) {
         logger.error('Failed to search for medications:', error);
@@ -114,6 +119,22 @@ export default function AddMedicationScreen() {
     setSelectedDrug(drug);
     setSearchQuery(drug.name);
     setSearchResults([]);
+  };
+
+  const handleSelectMedicationGroup = (group: MedicationGroup) => {
+    if (group.variantCount === 1) {
+      // Only one variant, select it directly
+      handleSelectDrug(group.variants[0]);
+    } else {
+      // Multiple variants, navigate to variant selection
+      router.push({
+        pathname: '/medications/variants',
+        params: { 
+          groupName: group.baseName,
+          variants: JSON.stringify(group.variants)
+        }
+      });
+    }
   };
 
   const handleAddTime = () => {
@@ -204,9 +225,29 @@ export default function AddMedicationScreen() {
     }
   };
 
-  const renderSearchResult = ({ item }: { item: DrugConcept }) => (
-    <TouchableOpacity style={styles.resultItem} onPress={() => handleSelectDrug(item)}>
-      <Text>{item.name}</Text>
+  const renderSearchResult = ({ item }: { item: MedicationGroup }) => (
+    <TouchableOpacity 
+      style={styles.resultItem} 
+      onPress={() => handleSelectMedicationGroup(item)}
+    >
+      <View style={styles.resultContent}>
+        <Text size="body" weight="medium">{item.baseName}</Text>
+        {item.variantCount > 1 && (
+          <View style={styles.variantInfo}>
+            <Text size="small" style={styles.variantText}>
+              {t('forms_available', { count: item.variantCount })}
+            </Text>
+            <View style={styles.badge}>
+              <Text size="small" weight="bold" style={styles.badgeText}>
+                {item.variantCount}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+      {item.variantCount > 1 && (
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+      )}
     </TouchableOpacity>
   );
 
@@ -244,7 +285,7 @@ export default function AddMedicationScreen() {
               <FlatList
                 data={searchResults}
                 renderItem={renderSearchResult}
-                keyExtractor={(item: DrugConcept) => item.rxcui}
+                keyExtractor={(item: MedicationGroup) => item.baseName}
                 keyboardShouldPersistTaps="handled"
                 ListEmptyComponent={!isSearching && searchQuery.length >= 3 ? (
                   <Text style={styles.helperText}>{t('no_search_results')}</Text>
@@ -396,6 +437,34 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  resultContent: {
+    flex: 1,
+  },
+  variantInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: theme.spacing.xs,
+    gap: theme.spacing.xs,
+  },
+  variantText: {
+    color: theme.colors.textSecondary,
+  },
+  badge: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radii.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    minWidth: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: theme.colors.surface,
+    fontSize: 12,
   },
   selectedDrugName: {
     textAlign: 'center',
