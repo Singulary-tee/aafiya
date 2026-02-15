@@ -4,7 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Medication } from '../../database/models/Medication';
 import { theme } from '../../constants/theme';
-import Card from '../common/Card';
+import { GlassCard } from '../common/GlassCard';
 import Button from '../common/Button';
 import { Text } from '../primitives/Text';
 
@@ -35,19 +35,22 @@ const DoseCard: React.FC<DoseCardProps> = ({ medication, scheduledTime, status, 
       bar: { backgroundColor: theme.colors.attention },
       text: { color: theme.colors.attention },
     },
-    pending: { bar: {}, text: {} },
+    pending: { 
+      bar: { backgroundColor: theme.colors.primary },
+      text: {} 
+    },
   };
 
   const { bar, text } = statusStyles[status];
 
   return (
-    <Card style={styles.card}>
+    <GlassCard variant="surface" shadow="medium" style={styles.card}>
       <View style={[styles.statusBar, bar]} />
       <View style={styles.content}>
         <View style={styles.details}>
-          <Text size="body" weight="medium">{scheduledTime}</Text>
+          <Text size="caption" style={styles.time}>{scheduledTime}</Text>
           <Text size="title" weight="bold" style={styles.name}>{medication.name}</Text>
-          <Text size="caption" style={{ color: theme.colors.textSecondary }}>{medication.strength}</Text>
+          <Text size="caption" style={styles.strength}>{medication.strength}</Text>
         </View>
         {status === 'pending' ? (
           <View style={styles.actions}>
@@ -58,7 +61,7 @@ const DoseCard: React.FC<DoseCardProps> = ({ medication, scheduledTime, status, 
           <Text size="body" weight="bold" style={text}>{t(`status.${status}`)}</Text>
         )}
       </View>
-    </Card>
+    </GlassCard>
   );
 };
 
@@ -67,10 +70,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 0,
     overflow: 'hidden',
-    marginBottom: theme.spacing.md,
   },
   statusBar: {
-    width: 6,
+    width: 4,
   },
   content: {
     flex: 1,
@@ -82,14 +84,25 @@ const styles = StyleSheet.create({
   details: {
     flex: 1,
   },
+  time: {
+    color: theme.colors.textTertiary,
+    marginBottom: theme.spacing.xs / 2,
+  },
   name: {
-    marginVertical: theme.spacing.xs,
+    marginVertical: theme.spacing.xs / 2,
+    color: theme.colors.textPrimary,
+  },
+  strength: {
+    color: theme.colors.textSecondary,
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    gap: theme.spacing.xs,
   },
   button: {
-    marginLeft: theme.spacing.sm,
+    minWidth: 80,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
   },
 });
 

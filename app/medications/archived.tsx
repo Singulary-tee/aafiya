@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/hooks/useTheme';
+import { theme } from '../../src/constants/theme';
 import { openDatabase } from '../../src/database';
 import { MedicationRepository } from '../../src/database/repositories/MedicationRepository';
 import { Medication } from '../../src/database/models/Medication';
@@ -11,7 +11,6 @@ import { useProfile } from '../../src/hooks/useProfile';
 import { logger } from '../../src/utils/logger';
 
 export default function ArchivedMedicationsScreen() {
-    const theme = useTheme();
     const router = useRouter();
     const { currentProfile } = useProfile();
     const [archivedMedications, setArchivedMedications] = useState<Medication[]>([]);

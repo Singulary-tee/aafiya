@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 
@@ -9,6 +9,7 @@ import { useHealthScore } from '@/src/hooks/useHealthScore';
 import { useTodayDoses } from '@/src/hooks/useTodayDoses';
 import { useStorageLevels } from '@/src/hooks/useStorageLevels';
 
+import { GradientBackground } from '@/src/components/primitives/GradientBackground';
 import { StorageSection } from '@/src/components/home/StorageSection';
 import { DoseList } from '@/src/components/home/DoseList';
 import { Text } from '@/src/components/primitives/Text';
@@ -25,42 +26,53 @@ export default function HomeScreen() {
   const isLoading = medsLoading || scoreLoading || dosesLoading || storageLoading;
 
   if (isLoading) {
-    return <ActivityIndicator style={styles.centered} />;
+    return (
+      <GradientBackground gradient="BRAND_SUBTLE">
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      </GradientBackground>
+    );
   }
 
   if (!activeProfile) {
     return (
-      <View style={styles.centered}>
-        <Text>{t('no_active_profile')}</Text>
-      </View>
+      <GradientBackground gradient="BRAND_SUBTLE">
+        <View style={styles.centered}>
+          <Text>{t('no_active_profile')}</Text>
+        </View>
+      </GradientBackground>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text size="headline" weight="bold" style={styles.header}>
-        {t('welcome')}, {activeProfile.name}
-      </Text>
+    <GradientBackground gradient="BRAND_SUBTLE">
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <Text size="headline" weight="bold" style={styles.header}>
+          {t('welcome')}, {activeProfile.name}
+        </Text>
 
-      <StorageSection 
-        healthScore={healthScore}
-        medications={medications}
-        storageInfo={storageInfo}
-      />
+        <StorageSection 
+          healthScore={healthScore}
+          medications={medications}
+          storageInfo={storageInfo}
+        />
 
-      <DoseList 
-        doses={doses}
-        onLogDose={logDose}
-      />
-    </ScrollView>
+        <DoseList 
+          doses={doses}
+          onLogDose={logDose}
+        />
+      </ScrollView>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentContainer: {
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.background,
   },
   centered: {
     flex: 1,
@@ -69,5 +81,6 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: theme.spacing.md,
+    color: theme.colors.textPrimary,
   },
 });
