@@ -118,10 +118,12 @@ export default function DataUsageScreen() {
     if (!db) return;
 
     try {
-      // Import functionality would require file picker
+      // Note: Import requires a file picker to select the backup file.
+      // This would need expo-document-picker or similar library.
+      // The importData function exists but needs file selection UI.
       Alert.alert(
         t('import_data'),
-        'Import functionality coming soon',
+        'Import requires selecting a backup file. This feature needs a file picker library for full offline functionality.',
         [{ text: t('cancel') }]
       );
     } catch (error) {

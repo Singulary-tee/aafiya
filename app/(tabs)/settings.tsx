@@ -42,10 +42,15 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleImportData = () => {
+  const handleImportData = async () => {
+    if (!db) return;
+
+    // Note: Import requires a file picker to select the backup file.
+    // This would need expo-document-picker or similar library.
+    // For now, we inform the user this feature needs additional setup.
     Alert.alert(
       t('import_data'),
-      'Import functionality coming soon',
+      'Import requires selecting a backup file. This feature needs a file picker library for full offline functionality.',
       [{ text: t('cancel') }]
     );
   };
@@ -141,7 +146,7 @@ export default function SettingsScreen() {
         />
         <SettingsItem 
           label={t('import_data')}
-          icon="cloud-upload-outline"
+          icon="document-text-outline"
           onPress={handleImportData}
         />
         <SettingsItem 

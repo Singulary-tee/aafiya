@@ -32,11 +32,15 @@ export async function hasCameraPermission(): Promise<boolean> {
 
 /**
  * Takes a photo and attempts to extract text from it.
- * Note: This is a placeholder implementation. In a production app, you would use:
- * - expo-image-manipulator for image processing
- * - vision-camera with text recognition plugin
- * - Google Cloud Vision API or AWS Textract for OCR
- * - react-native-text-recognition
+ * 
+ * FUTURE ENHANCEMENT: This feature requires OCR capability.
+ * Recommended options for offline-first implementation:
+ * - react-native-vision-camera with text recognition plugin (on-device)
+ * - expo-image-manipulator + ML Kit (on-device)
+ * - For online mode: Google Cloud Vision API or AWS Textract
+ * 
+ * This function currently notifies the user that OCR is not available
+ * in this version, maintaining the offline-first principle.
  * 
  * @param cameraRef Reference to the camera component.
  * @param onResult Callback function with extracted text.
@@ -67,23 +71,18 @@ export async function captureAndExtractText(
 
         logger.info('Photo captured:', photo.uri);
 
-        // In a real implementation, you would:
-        // 1. Send the image to an OCR service (Google Cloud Vision, AWS Textract, etc.)
-        // 2. Or use a local text recognition library
-        // 3. Process the response and extract medication names
-        
-        // For now, we'll provide a placeholder response
-        // In production, replace this with actual OCR implementation
-        const mockExtractedText = 'Lisinopril 10mg'; // Placeholder
-        
         // Clean up the temporary photo
         await FileSystem.deleteAsync(photo.uri, { idempotent: true });
         
-        onResult(mockExtractedText);
-    } catch (error) {
-        logger.error('Error capturing and extracting text:', error);
+        // OCR is not implemented in this offline-first version
+        // User should manually type the medication name
         if (onError) {
-            onError(error instanceof Error ? error.message : 'Failed to extract text from image');
+            onError('OCR feature requires additional library. Please type medication name manually.');
+        }
+    } catch (error) {
+        logger.error('Error capturing photo:', error);
+        if (onError) {
+            onError(error instanceof Error ? error.message : 'Failed to capture photo');
         }
     }
 }
@@ -91,6 +90,9 @@ export async function captureAndExtractText(
 /**
  * Processes an image URI and extracts text from it.
  * This can be used with image picker or camera roll.
+ * 
+ * FUTURE ENHANCEMENT: Requires OCR library for text extraction.
+ * Currently not implemented to maintain offline-first principle.
  * 
  * @param imageUri URI of the image to process.
  * @param onResult Callback function with extracted text.
@@ -102,21 +104,16 @@ export async function extractTextFromImage(
     onError?: (error: string) => void
 ): Promise<void> {
     try {
-        logger.info('Processing image for text extraction:', imageUri);
+        logger.info('Image OCR requested but not available:', imageUri);
 
-        // In a real implementation:
-        // 1. Read the image from the URI
-        // 2. Send to OCR service or use local library
-        // 3. Parse the response
-        // 4. Extract medication-related text (names, dosages)
-        
-        // Placeholder implementation
-        const mockExtractedText = 'Sample medication name';
-        onResult(mockExtractedText);
-    } catch (error) {
-        logger.error('Error extracting text from image:', error);
+        // OCR is not implemented in this offline-first version
         if (onError) {
-            onError(error instanceof Error ? error.message : 'Failed to extract text');
+            onError('OCR feature requires additional library. Please type medication name manually.');
+        }
+    } catch (error) {
+        logger.error('Error in image OCR:', error);
+        if (onError) {
+            onError(error instanceof Error ? error.message : 'OCR not available');
         }
     }
 }

@@ -185,9 +185,14 @@ export function getInfiniteScrollProps(
 }
 
 /**
- * Simple loading footer component for lists
+ * Loading footer component for paginated lists
+ * Shows a loading indicator when more items are being fetched
  */
 function LoadingFooter() {
-  // This would typically be a proper component with ActivityIndicator
-  return null; // Placeholder
+  const { ActivityIndicator } = require('react-native');
+  return (
+    <View style={{ padding: 16, alignItems: 'center' }}>
+      <ActivityIndicator />
+    </View>
+  );
 }

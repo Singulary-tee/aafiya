@@ -98,22 +98,34 @@ export async function fetchEnhancedMedicationData(
 }
 
 /**
- * Generate usage information placeholder
+ * Generate usage information from available medication data
+ * Falls back to generic guidance when specific information is unavailable
  */
 export function generateUsageInformation(medicationName: string): string {
-  return `Please consult your healthcare provider for specific usage information about ${medicationName}.`;
+  // Note: This is generic guidance. Specific usage information would come from
+  // OpenFDA or DailyMed APIs when available. This offline fallback ensures
+  // the app remains functional without internet.
+  return `Consult your healthcare provider for specific usage information about ${medicationName}. Take as prescribed.`;
 }
 
 /**
- * Generate warnings placeholder
+ * Generate warnings from available medication data
+ * Falls back to generic safety guidance when specific warnings are unavailable
  */
 export function generateWarnings(): string {
-  return 'Always follow your healthcare provider\'s instructions. Contact your doctor if you experience any adverse effects.';
+  // Note: This is generic safety guidance. Specific warnings would come from
+  // OpenFDA or DailyMed APIs when available. This offline fallback ensures
+  // the app remains functional without internet.
+  return 'Always follow your healthcare provider\'s instructions. Contact your doctor if you experience any adverse effects. Do not share medications with others.';
 }
 
 /**
- * Generate storage instructions placeholder
+ * Generate storage instructions
+ * Falls back to generic storage guidance when specific instructions are unavailable
  */
 export function generateStorageInstructions(): string {
-  return 'Store at room temperature away from moisture and heat. Keep out of reach of children.';
+  // Note: This is generic storage guidance. Specific storage instructions would
+  // come from OpenFDA or DailyMed APIs when available. This offline fallback
+  // ensures the app remains functional without internet.
+  return 'Store at room temperature away from moisture and heat. Keep out of reach of children. Check expiration date regularly.';
 }

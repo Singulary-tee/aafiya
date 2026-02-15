@@ -19,10 +19,15 @@ export async function requestMicrophonePermission(): Promise<boolean> {
 
 /**
  * Starts voice recognition for medication search.
- * Note: This is a placeholder implementation. In a production app, you would use
- * expo-speech-recognition or a third-party service like Google Speech-to-Text.
  * 
- * For now, we'll provide a simpler implementation that shows the intent.
+ * FUTURE ENHANCEMENT: This feature requires a speech recognition library.
+ * Recommended options:
+ * - expo-speech-recognition (when available)
+ * - @react-native-voice/voice
+ * - Device's native speech recognition API
+ * 
+ * This function currently notifies the user that the feature is not available
+ * in this offline-first version.
  * 
  * @param onResult Callback function when speech is recognized.
  * @param onError Callback function when an error occurs.
@@ -32,22 +37,16 @@ export function startVoiceInput(
     onError?: (error: string) => void
 ): void {
     try {
-        // In a real implementation, this would use:
-        // - expo-speech-recognition (if available)
-        // - react-native-voice
-        // - or a cloud service like Google Speech-to-Text
+        logger.info('Voice input requested - feature not yet available');
         
-        // For this implementation, we'll log the attempt
-        logger.info('Voice input requested - would start speech recognition here');
-        
-        // Notify that voice input is not yet implemented
+        // Notify that voice input is not available in this version
         if (onError) {
-            onError('Voice input will be implemented with a speech recognition library');
+            onError('Voice input requires additional speech recognition library. Use keyboard search instead.');
         }
     } catch (error) {
-        logger.error('Error starting voice input:', error);
+        logger.error('Error in voice input:', error);
         if (onError) {
-            onError('Failed to start voice input');
+            onError('Voice input not available');
         }
     }
 }
@@ -67,8 +66,11 @@ export function stopVoiceInput(): void {
 /**
  * Checks if voice input is available on the device.
  * @returns true if voice input is available, false otherwise.
+ * 
+ * Currently returns false as this feature requires additional dependencies.
  */
 export function isVoiceInputAvailable(): boolean {
-    // In a real implementation, check if speech recognition is available
-    return false; // Placeholder - will be true when implemented
+    // Voice input requires a speech recognition library which is not included
+    // to maintain offline-first nature and minimize dependencies
+    return false;
 }
