@@ -23,7 +23,9 @@
         "POST_NOTIFICATIONS",
         "USE_EXACT_ALARM",
         "CAMERA",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "blockedPermissions": [
         "ACCESS_FINE_LOCATION",
@@ -102,8 +104,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "YOUR_PROJECT_ID_HERE"
+        "projectId": "06bccdbc-b1ad-41cc-9c2f-1f8be8b01ab6"
       }
-    }
+    },
+    "owner": "thecomprehensivesolution"
   }
 }

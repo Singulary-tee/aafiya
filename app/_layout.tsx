@@ -104,21 +104,29 @@ const AppLayoutInner = () => {
 
 const AppLayout = () => {
     return (
-        <FontSettingsProvider>
-            <ProfileProvider>
-              <AppLayoutInner />
-            </ProfileProvider>
-        </FontSettingsProvider>
+        <ProfileProvider>
+            <AppLayoutInner />
+        </ProfileProvider>
     )
 }
 
-export default function RootLayout() {
+const AppContent = () => {
   const { isInitialized } = useAppInit();
   
   return (
-    <DatabaseProvider>
+    <>
       <AppLayout />
       <CustomSplashScreen isReady={isInitialized} />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <DatabaseProvider>
+        <FontSettingsProvider>
+            <AppContent />
+        </FontSettingsProvider>
     </DatabaseProvider>
   );
 }
