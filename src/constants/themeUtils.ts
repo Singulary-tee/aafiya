@@ -55,19 +55,28 @@ export const gradientTextColors = (gradient: keyof typeof theme.gradients): stri
 
 /**
  * Create responsive spacing based on screen size
+ * TODO: Implement actual responsive logic with Dimensions API
+ * Currently returns medium spacing for all screen sizes
  */
 export const responsiveSpacing = (
   small: keyof typeof theme.spacing,
   medium: keyof typeof theme.spacing,
   large: keyof typeof theme.spacing
 ) => {
-  // This is a simplified version - in real app, you'd check screen dimensions
+  // Placeholder - implement with Dimensions.get('window').width
   return theme.spacing[medium];
 };
 
 /**
- * Create a card style with optional variant
+ * Mix two colors
+ * TODO: Implement proper color mixing with a color manipulation library
+ * This is a placeholder implementation
  */
+export const mixColors = (color1: string, color2: string, ratio: number = 0.5): string => {
+  // Placeholder - use a library like tinycolor2 or chroma-js for proper color mixing
+  console.warn('mixColors is a placeholder and does not actually mix colors');
+  return ratio > 0.5 ? color2 : color1;
+};
 export const cardStyle = (variant: 'default' | 'glass' | 'elevated' = 'default'): ViewStyle => {
   const variants = {
     default: {

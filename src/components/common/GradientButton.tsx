@@ -66,6 +66,9 @@ const GradientButton: React.FC<GradientButtonProps> = ({
 
   const { button, text, gradient } = variantStyles[variant];
 
+  // Try to translate the title, but fall back to the raw title if no translation exists
+  const displayTitle = title.includes('.') || title.includes('_') ? t(title, { defaultValue: title }) : title;
+
   const buttonContent = (
     <>
       {loading ? (
@@ -75,7 +78,7 @@ const GradientButton: React.FC<GradientButtonProps> = ({
         />
       ) : (
         <Text weight="bold" size="body" style={[text, textStyle]}>
-          {t(title)}
+          {displayTitle}
         </Text>
       )}
     </>

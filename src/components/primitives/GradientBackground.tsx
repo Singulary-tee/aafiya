@@ -12,6 +12,7 @@ interface GradientBackgroundProps {
   end?: { x: number; y: number };
   style?: ViewStyle;
   children?: React.ReactNode;
+  flex?: number; // Make flex configurable
 }
 
 /**
@@ -29,6 +30,7 @@ export const GradientBackground: React.FC<GradientBackgroundProps> = ({
   end = { x: 1, y: 1 },
   style,
   children,
+  flex = 1,
 }) => {
   const gradientColors = colors || theme.gradients[gradient];
 
@@ -37,7 +39,7 @@ export const GradientBackground: React.FC<GradientBackgroundProps> = ({
       colors={gradientColors}
       start={start}
       end={end}
-      style={[styles.container, style]}
+      style={[{ flex }, style]}
     >
       {children}
     </LinearGradient>
@@ -45,7 +47,5 @@ export const GradientBackground: React.FC<GradientBackgroundProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  // Removed container style as flex is now configurable via props
 });
