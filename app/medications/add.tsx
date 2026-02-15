@@ -21,7 +21,7 @@ import { useDatabase } from '@/src/hooks/useDatabase';
 import { RxNormService } from '@/src/services/api/RxNormService';
 import { DrugConcept, RxNormConceptGroup } from '@/src/types/api';
 import { MedicationGroup } from '@/src/types/medication';
-import { groupMedications } from '@/src/utils/medicationGrouping';
+import { groupMedications, parseMedicationName } from '@/src/utils/medicationGrouping';
 
 const debounce = <T extends (...args: any[]) => void>(fn: T, delayMs: number) => {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -68,12 +68,19 @@ export default function AddMedicationScreen() {
   // Handle incoming variant selection from variants screen
   useEffect(() => {
     if (params.selectedRxcui && params.selectedName) {
-      setSelectedDrug({
+      const drug: DrugConcept = {
         rxcui: params.selectedRxcui as string,
         name: params.selectedName as string,
         synonym: params.selectedName as string,
-      });
+      };
+      setSelectedDrug(drug);
       setSearchQuery(params.selectedName as string);
+      
+      // Auto-fill strength from parsed medication name
+      const parsed = parseMedicationName(params.selectedName as string);
+      if (parsed.strength) {
+        setStrength(parsed.strength);
+      }
     }
   }, [params.selectedRxcui, params.selectedName]);
 
