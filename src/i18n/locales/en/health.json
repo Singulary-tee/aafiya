@@ -1,0 +1,23 @@
+{
+  "health_metrics": "Health Metrics",
+  "blood_pressure": "Blood Pressure",
+  "glucose": "Blood Glucose",
+  "weight": "Weight",
+  "heart_rate": "Heart Rate",
+  "temperature": "Temperature",
+  "other": "Other",
+  "systolic": "Systolic",
+  "diastolic": "Diastolic",
+  "glucose_level": "Glucose level",
+  "log_blood_pressure": "Log Blood Pressure",
+  "log_glucose": "Log Glucose",
+  "log_weight": "Log Weight",
+  "recent_readings": "Recent Readings",
+  "no_readings": "No readings yet",
+  "invalid_blood_pressure": "Please enter valid blood pressure values",
+  "invalid_glucose": "Please enter a valid glucose value (20-600 mg/dL)",
+  "success_blood_pressure": "Blood pressure logged",
+  "success_glucose": "Glucose level logged",
+  "success_weight": "Weight logged",
+  "error_logging": "Failed to log metric"
+}
