@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { logger } from '../utils/logger';
 
 /**
  * Pagination configuration
@@ -35,10 +36,12 @@ export interface PaginationResult<T> {
  * 
  * Usage:
  * ```typescript
+ * const fetchFn = useCallback(async (limit, offset) => {
+ *   return await repository.findAll(limit, offset);
+ * }, [repository]);
+ * 
  * const { items, pagination, loadMore, refresh } = usePagination(
- *   async (limit, offset) => {
- *     return await repository.findAll(limit, offset);
- *   },
+ *   fetchFn,
  *   { initialLimit: 20 }
  * );
  * ```
@@ -76,33 +79,35 @@ export function usePagination<T>(
         isLoading: false,
       }));
     } catch (error) {
-      console.error('Failed to load initial page:', error);
+      logger.error('Failed to load initial page:', error);
       setPagination(prev => ({ ...prev, isLoading: false }));
     }
-  }, [fetchFunction, initialLimit]);
+  }, [fetchFunction, initialLimit, pagination.isLoading]);
 
   /**
    * Loads next page of results
    */
   const loadMore = useCallback(async () => {
-    if (!pagination.hasMore || pagination.isLoadingMore || pagination.isLoading) {
+    const { hasMore, isLoadingMore, isLoading, limit, offset } = pagination;
+    
+    if (!hasMore || isLoadingMore || isLoading) {
       return;
     }
     
     setPagination(prev => ({ ...prev, isLoadingMore: true }));
     
     try {
-      const results = await fetchFunction(pagination.limit, pagination.offset);
+      const results = await fetchFunction(limit, offset);
       
       setItems(prev => [...prev, ...results]);
       setPagination(prev => ({
         ...prev,
         offset: prev.offset + results.length,
-        hasMore: results.length === pagination.limit,
+        hasMore: results.length === limit,
         isLoadingMore: false,
       }));
     } catch (error) {
-      console.error('Failed to load more:', error);
+      logger.error('Failed to load more:', error);
       setPagination(prev => ({ ...prev, isLoadingMore: false }));
     }
   }, [fetchFunction, pagination]);

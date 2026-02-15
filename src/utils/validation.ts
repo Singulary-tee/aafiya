@@ -35,9 +35,6 @@ export const validateProfileNameWithError = (name: string): ValidationResult => 
   if (!name || name.trim().length === 0) {
     return { isValid: false, error: 'Profile name is required' };
   }
-  if (name.trim().length < 1) {
-    return { isValid: false, error: 'Profile name must be at least 1 character' };
-  }
   if (name.trim().length > 50) {
     return { isValid: false, error: 'Profile name must be 50 characters or less' };
   }
@@ -61,9 +58,6 @@ export const validateMedicationName = (name: string): boolean => {
 export const validateMedicationNameWithError = (name: string): ValidationResult => {
   if (!name || name.trim().length === 0) {
     return { isValid: false, error: 'Medication name is required' };
-  }
-  if (name.trim().length < 1) {
-    return { isValid: false, error: 'Medication name must be at least 1 character' };
   }
   if (name.trim().length > 200) {
     return { isValid: false, error: 'Medication name must be 200 characters or less' };

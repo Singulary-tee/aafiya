@@ -1,8 +1,8 @@
 import * as Notifications from 'expo-notifications';
 import { Medication } from '../../database/models/Medication';
 import { Schedule } from '../../database/models/Schedule';
-import { logger } from '../../utils/logger';
-import { requestNotificationPermissions } from './NotificationPermissions';
+import { logger } from './logger';
+import { requestNotificationPermissions } from '../services/notification/NotificationPermissions';
 
 /**
  * Enhanced notification management utilities.
