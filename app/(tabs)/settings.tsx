@@ -45,14 +45,38 @@ export default function SettingsScreen() {
   const handleImportData = async () => {
     if (!db) return;
 
-    // Note: Import requires a file picker to select the backup file.
-    // This would need expo-document-picker or similar library.
-    // For now, we inform the user this feature needs additional setup.
-    Alert.alert(
-      t('import_data'),
-      'Import requires selecting a backup file. This feature needs a file picker library for full offline functionality.',
-      [{ text: t('cancel') }]
-    );
+    try {
+      // Use expo-document-picker to select backup file
+      const { DocumentPicker } = await import('expo-document-picker');
+      
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+      });
+      
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return; // User cancelled
+      }
+      
+      const file = result.assets[0];
+      
+      // Import the data
+      const { importData } = await import('@/src/utils/dataExport');
+      const success = await importData(db, file.uri);
+      
+      if (success) {
+        Alert.alert(
+          t('import_data'),
+          'Data imported successfully!',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to import data. The file may be corrupted or incompatible.');
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      Alert.alert('Error', 'Failed to import data');
+    }
   };
 
   const handleClearCache = async () => {

@@ -1,6 +1,8 @@
 import { Camera, CameraType } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { logger } from './logger';
+import { createWorker } from 'tesseract.js';
 
 /**
  * Requests camera permission for OCR.
@@ -31,16 +33,8 @@ export async function hasCameraPermission(): Promise<boolean> {
 }
 
 /**
- * Takes a photo and attempts to extract text from it.
- * 
- * FUTURE ENHANCEMENT: This feature requires OCR capability.
- * Recommended options for offline-first implementation:
- * - react-native-vision-camera with text recognition plugin (on-device)
- * - expo-image-manipulator + ML Kit (on-device)
- * - For online mode: Google Cloud Vision API or AWS Textract
- * 
- * This function currently notifies the user that OCR is not available
- * in this version, maintaining the offline-first principle.
+ * Takes a photo and extracts text from it using Tesseract.js OCR.
+ * This runs entirely offline on the device.
  * 
  * @param cameraRef Reference to the camera component.
  * @param onResult Callback function with extracted text.
@@ -66,18 +60,32 @@ export async function captureAndExtractText(
         const photo = await cameraRef.takePictureAsync({
             quality: 0.8,
             base64: false,
-            skipProcessing: true,
+            skipProcessing: false,
         });
 
         logger.info('Photo captured:', photo.uri);
 
-        // Clean up the temporary photo
-        await FileSystem.deleteAsync(photo.uri, { idempotent: true });
-        
-        // OCR is not implemented in this offline-first version
-        // User should manually type the medication name
-        if (onError) {
-            onError('OCR feature requires additional library. Please type medication name manually.');
+        // Process image with Tesseract.js for OCR
+        try {
+            const extractedText = await performOCR(photo.uri);
+            
+            // Clean up the temporary photo
+            await FileSystem.deleteAsync(photo.uri, { idempotent: true });
+            
+            if (extractedText && extractedText.trim().length > 0) {
+                onResult(extractedText.trim());
+            } else {
+                if (onError) {
+                    onError('No text found in image. Please try again or type manually.');
+                }
+            }
+        } catch (ocrError) {
+            logger.error('OCR processing error:', ocrError);
+            // Clean up the temporary photo
+            await FileSystem.deleteAsync(photo.uri, { idempotent: true });
+            if (onError) {
+                onError('Failed to read text from image. Please type medication name manually.');
+            }
         }
     } catch (error) {
         logger.error('Error capturing photo:', error);
@@ -88,11 +96,38 @@ export async function captureAndExtractText(
 }
 
 /**
+ * Performs OCR on an image using Tesseract.js.
+ * This is an offline, on-device OCR solution.
+ * 
+ * @param imageUri URI of the image to process.
+ * @returns Extracted text from the image.
+ */
+async function performOCR(imageUri: string): Promise<string> {
+    try {
+        logger.info('Starting OCR processing...');
+        
+        // Create Tesseract worker
+        const worker = await createWorker('eng', 1, {
+            logger: (m) => logger.log('[Tesseract]', m),
+        });
+
+        // Perform OCR
+        const { data: { text } } = await worker.recognize(imageUri);
+        
+        // Terminate worker
+        await worker.terminate();
+        
+        logger.info('OCR completed, extracted text length:', text.length);
+        return text;
+    } catch (error) {
+        logger.error('Tesseract OCR error:', error);
+        throw error;
+    }
+}
+
+/**
  * Processes an image URI and extracts text from it.
  * This can be used with image picker or camera roll.
- * 
- * FUTURE ENHANCEMENT: Requires OCR library for text extraction.
- * Currently not implemented to maintain offline-first principle.
  * 
  * @param imageUri URI of the image to process.
  * @param onResult Callback function with extracted text.
@@ -104,16 +139,22 @@ export async function extractTextFromImage(
     onError?: (error: string) => void
 ): Promise<void> {
     try {
-        logger.info('Image OCR requested but not available:', imageUri);
+        logger.info('Processing image for text extraction:', imageUri);
 
-        // OCR is not implemented in this offline-first version
-        if (onError) {
-            onError('OCR feature requires additional library. Please type medication name manually.');
+        // Perform OCR on the image
+        const extractedText = await performOCR(imageUri);
+        
+        if (extractedText && extractedText.trim().length > 0) {
+            onResult(extractedText.trim());
+        } else {
+            if (onError) {
+                onError('No text found in image.');
+            }
         }
     } catch (error) {
-        logger.error('Error in image OCR:', error);
+        logger.error('Error extracting text from image:', error);
         if (onError) {
-            onError(error instanceof Error ? error.message : 'OCR not available');
+            onError(error instanceof Error ? error.message : 'Failed to extract text');
         }
     }
 }
@@ -133,7 +174,7 @@ export function parseMedicationNames(text: string): string[] {
     // - Capitalized words
     // - Words ending in common medication suffixes
     // - Words with dosage information nearby
-    const medicationSuffixes = ['ol', 'in', 'pril', 'stat', 'vir', 'mab', 'ide', 'one', 'pine'];
+    const medicationSuffixes = ['ol', 'in', 'pril', 'stat', 'vir', 'mab', 'ide', 'one', 'pine', 'pam', 'zole'];
     const dosagePatterns = /\d+\s*(mg|ml|mcg|g|units|%)/i;
     
     for (const line of lines) {
