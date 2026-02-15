@@ -115,11 +115,3 @@ export const textStyle = (
     color: theme.colors[color],
   };
 };
-
-/**
- * Mix two colors (simplified version for demonstration)
- */
-export const mixColors = (color1: string, color2: string, ratio: number = 0.5): string => {
-  // This is a placeholder - in production, you'd want a proper color mixing library
-  return ratio > 0.5 ? color2 : color1;
-};
