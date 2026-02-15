@@ -3,6 +3,13 @@
 export const APP_CONFIG = {
   DATABASE_NAME: 'medication_tracker.db',
   SCHEMA_VERSION: 1,
+  APP_NAME: 'Aafiya',
+  APP_NAME_AR: 'عافية',
+  VERSION: '1.0.0',
+  BUILD_NUMBER: '1',
+  GITHUB_URL: 'https://github.com/Singulary-tee/aafiya',
+  SUPPORT_EMAIL: 'support@aafiya.app',
+  PRIVACY_EMAIL: 'privacy@aafiya.app',
 };
 
 // API Configuration

@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/src/components/primitives/Text';
 import { LanguageSwitcher } from '@/src/components/settings/LanguageSwitcher';
 import { FontSwitcher } from '@/src/components/settings/FontSwitcher';
-import Button from '@/src/components/common/Button';
 import { theme } from '@/src/constants/theme';
+import { APP_CONFIG } from '@/src/constants/config';
 
 export default function SettingsScreen() {
   const { t } = useTranslation(['settings']);
@@ -17,56 +18,234 @@ export default function SettingsScreen() {
     <ScrollView style={styles.container}>
       <Text size="headline" weight="bold" style={styles.title}>{t('settings')}</Text>
       
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferences</Text>
+      {/* General */}
+      <SettingsSection title={t('general')}>
         <LanguageSwitcher />
         <FontSwitcher />
-      </View>
+      </SettingsSection>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Helper Mode</Text>
-        <Text style={styles.sectionDescription}>
-          Allow family members or caregivers to receive notifications when you miss a dose
-        </Text>
-        <Button 
-          title="Add Helper" 
-          onPress={() => router.push('/helper/generate')}
-          style={styles.button}
+      {/* Notifications */}
+      <SettingsSection title={t('notifications')}>
+        <SettingsItem 
+          label={t('enable_notifications')}
+          onPress={() => {}}
+          rightElement={<Switch value={true} onValueChange={() => {}} />}
         />
-        <Button 
-          title="Manage Helpers" 
+        <SettingsItem 
+          label={t('default_grace_period')}
+          value="30 minutes"
+          onPress={() => {}}
+        />
+        <SettingsItem 
+          label={t('vibrate')}
+          onPress={() => {}}
+          rightElement={<Switch value={true} onValueChange={() => {}} />}
+        />
+      </SettingsSection>
+
+      {/* Storage */}
+      <SettingsSection title={t('storage')}>
+        <SettingsItem 
+          label={t('low_stock_alert')}
+          value="7 days"
+          onPress={() => {}}
+        />
+        <SettingsItem 
+          label={t('auto_refill_reminder')}
+          onPress={() => {}}
+          rightElement={<Switch value={false} onValueChange={() => {}} />}
+        />
+      </SettingsSection>
+
+      {/* Data */}
+      <SettingsSection title={t('data')}>
+        <SettingsItem 
+          label={t('export_data')}
+          icon="download-outline"
+          onPress={() => {}}
+        />
+        <SettingsItem 
+          label={t('import_data')}
+          icon="cloud-upload-outline"
+          onPress={() => {}}
+        />
+        <SettingsItem 
+          label={t('clear_cache')}
+          icon="trash-outline"
+          onPress={() => {}}
+        />
+      </SettingsSection>
+
+      {/* Database */}
+      <SettingsSection title={t('database')}>
+        <SettingsItem 
+          label={t('update_medication_database')}
+          icon="refresh-outline"
+          onPress={() => {}}
+        />
+        <SettingsItem 
+          label={t('last_updated')}
+          value={t('never')}
+        />
+        <SettingsItem 
+          label={t('database_size')}
+          value="2.4 MB"
+        />
+      </SettingsSection>
+
+      {/* Privacy */}
+      <SettingsSection title={t('privacy')}>
+        <SettingsItem 
+          label={t('privacy_policy')}
+          icon="shield-checkmark-outline"
+          onPress={() => router.push('/settings/privacy')}
+          showChevron
+        />
+        <SettingsItem 
+          label={t('data_usage')}
+          icon="bar-chart-outline"
+          onPress={() => router.push('/settings/data-usage')}
+          showChevron
+        />
+      </SettingsSection>
+
+      {/* Helper Mode */}
+      <SettingsSection title={t('helper_mode')}>
+        <SettingsItem 
+          label={t('manage_helpers')}
+          icon="people-outline"
           onPress={() => router.push('/helper')}
-          variant="secondary"
-          style={styles.button}
+          showChevron
         />
-      </View>
+        <SettingsItem 
+          label={t('paired_devices')}
+          value="0"
+        />
+      </SettingsSection>
+
+      {/* About */}
+      <SettingsSection title={t('about_section')}>
+        <SettingsItem 
+          label={t('about_app')}
+          icon="information-circle-outline"
+          onPress={() => router.push('/settings/about')}
+          showChevron
+        />
+        <SettingsItem 
+          label={t('version')}
+          value={`${APP_CONFIG.VERSION} (${APP_CONFIG.BUILD_NUMBER})`}
+        />
+      </SettingsSection>
     </ScrollView>
   );
 }
 
+interface SettingsSectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const SettingsSection: React.FC<SettingsSectionProps> = ({ title, children }) => (
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={styles.sectionContent}>
+      {children}
+    </View>
+  </View>
+);
+
+interface SettingsItemProps {
+  label: string;
+  value?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  onPress?: () => void;
+  rightElement?: React.ReactNode;
+  showChevron?: boolean;
+}
+
+const SettingsItem: React.FC<SettingsItemProps> = ({ 
+  label, 
+  value, 
+  icon, 
+  onPress, 
+  rightElement,
+  showChevron 
+}) => {
+  const content = (
+    <View style={styles.item}>
+      <View style={styles.itemLeft}>
+        {icon && <Ionicons name={icon} size={20} color={theme.colors.textSecondary} style={styles.itemIcon} />}
+        <Text size="body" style={styles.itemLabel}>{label}</Text>
+      </View>
+      <View style={styles.itemRight}>
+        {value && <Text size="body" style={styles.itemValue}>{value}</Text>}
+        {rightElement}
+        {showChevron && <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />}
+      </View>
+    </View>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.md,
     backgroundColor: theme.colors.background,
   },
   title: {
-    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
   },
   section: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: theme.fontSizes.subheading,
-    fontWeight: '600',
-    marginBottom: theme.spacing.sm,
-  },
-  sectionDescription: {
     fontSize: theme.fontSizes.small,
+    fontWeight: '600',
     color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xs,
   },
-  button: {
-    marginBottom: theme.spacing.sm,
+  sectionContent: {
+    backgroundColor: theme.colors.surface,
+  },
+  item: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.divider,
+  },
+  itemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  itemIcon: {
+    marginRight: theme.spacing.sm,
+  },
+  itemLabel: {
+    flex: 1,
+  },
+  itemRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  itemValue: {
+    color: theme.colors.textSecondary,
   },
 });
