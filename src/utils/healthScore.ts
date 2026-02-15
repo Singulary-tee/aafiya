@@ -16,6 +16,7 @@ interface HealthScoreParams {
   takenCount: number;
   missedCount: number;
   skippedCount: number;
+  delayedCount?: number; // New: count of delayed doses
   totalScheduled: number;
 }
 
@@ -23,19 +24,21 @@ interface HealthScoreParams {
  * Calculates health score based on medication adherence.
  * Score is based on:
  * - Taken doses: +1 point each
+ * - Delayed doses: +0.8 points each (lighter penalty than missed)
  * - Skipped doses: -0.5 points each
  * - Missed doses: -1 point each
  * Result is clamped to 0-100 range.
  */
 export function calculateHealthScore(params: HealthScoreParams): number {
-  const { takenCount, missedCount, skippedCount, totalScheduled } = params;
+  const { takenCount, missedCount, skippedCount, delayedCount = 0, totalScheduled } = params;
   
   if (totalScheduled === 0) {
     return 100; // No doses scheduled means perfect health score
   }
   
   // Calculate raw score
-  const points = takenCount - missedCount - (skippedCount * 0.5);
+  // Delayed doses get 0.8 points (lighter penalty than skipped/missed)
+  const points = takenCount + (delayedCount * 0.8) - missedCount - (skippedCount * 0.5);
   const maxPoints = totalScheduled;
   
   // Convert to percentage
@@ -73,6 +76,7 @@ export async function recalculateHealthScore(
     const takenCount = doses.filter(d => d.status === 'taken').length;
     const missedCount = doses.filter(d => d.status === 'missed').length;
     const skippedCount = doses.filter(d => d.status === 'skipped').length;
+    const delayedCount = doses.filter(d => d.status === 'delayed').length;
     const totalScheduled = doses.length;
     
     // Calculate score
@@ -80,6 +84,7 @@ export async function recalculateHealthScore(
       takenCount,
       missedCount,
       skippedCount,
+      delayedCount,
       totalScheduled
     });
     
