@@ -1,0 +1,23 @@
+{
+  "health_metrics": "المقاييس الصحية",
+  "blood_pressure": "ضغط الدم",
+  "glucose": "سكر الدم",
+  "weight": "الوزن",
+  "heart_rate": "معدل ضربات القلب",
+  "temperature": "درجة الحرارة",
+  "other": "أخرى",
+  "systolic": "الانقباضي",
+  "diastolic": "الانبساطي",
+  "glucose_level": "مستوى السكر",
+  "log_blood_pressure": "تسجيل ضغط الدم",
+  "log_glucose": "تسجيل سكر الدم",
+  "log_weight": "تسجيل الوزن",
+  "recent_readings": "القراءات الأخيرة",
+  "no_readings": "لا توجد قراءات بعد",
+  "invalid_blood_pressure": "الرجاء إدخال قيم ضغط دم صحيحة",
+  "invalid_glucose": "الرجاء إدخال قيمة سكر صحيحة (20-600 ملغ/ديسيلتر)",
+  "success_blood_pressure": "تم تسجيل ضغط الدم",
+  "success_glucose": "تم تسجيل مستوى السكر",
+  "success_weight": "تم تسجيل الوزن",
+  "error_logging": "فشل تسجيل المقياس"
+}

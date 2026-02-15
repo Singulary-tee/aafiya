@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +6,10 @@ import Button from '../common/Button';
 import { SPACING } from '@/src/constants/spacing';
 import { theme } from '@/src/constants/theme';
 
-// TODO: Move to a dedicated types file
+/**
+ * Profile type definition
+ * Represents a user profile in the app
+ */
 export interface Profile {
   id: string;
   name: string;

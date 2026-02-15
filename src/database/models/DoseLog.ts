@@ -21,8 +21,8 @@ export interface DoseLog {
     /** The time the dose was actually taken, if taken. */
     actual_time: number | null;
 
-    /** The status of the dose (e.g., 'taken', 'skipped', 'missed'). */
-    status: 'taken' | 'skipped' | 'missed' | 'pending';
+    /** The status of the dose (e.g., 'taken', 'skipped', 'missed', 'delayed'). */
+    status: 'taken' | 'skipped' | 'missed' | 'pending' | 'delayed';
 
     /** Any notes associated with this dose. */
     notes: string | null;

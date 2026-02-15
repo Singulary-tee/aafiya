@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDatabase } from '@/src/hooks/useDatabase';
 import { MedicationRepository } from '@/src/database/repositories/MedicationRepository';
@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { theme } from '@/src/constants/theme';
 import { Text } from '@/src/components/primitives/Text';
 import Button from '@/src/components/common/Button';
+import PillImage from '@/src/components/medication/PillImage';
+import ExpandableSection from '@/src/components/common/ExpandableSection';
 
 export default function MedicationDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -32,47 +34,136 @@ export default function MedicationDetailScreen() {
   };
 
   if (isDbLoading || !medication) {
-    return <ActivityIndicator />;
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.name}>{medication.name}</Text>
-      <Text style={styles.strength}>{medication.strength}</Text>
-      <Text style={styles.count}>{t('current_count')}{medication.current_count}</Text>
-      <Text style={styles.count}>{t('initial_count')}{medication.initial_count}</Text>
-      
-      <View style={styles.buttonContainer}>
-        <Button title={t('edit')} onPress={() => router.push(`/medications/edit/${id}`)} />
-        <Button title={t('delete')} onPress={handleDelete} variant="secondary" />
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Large medication image */}
+      <View style={styles.imageContainer}>
+        <PillImage imageUrl={medication.image_url ?? undefined} size={120} />
       </View>
-    </View>
+
+      {/* Medication name and basic info */}
+      <Text style={styles.name} size="title" weight="bold">
+        {medication.name}
+      </Text>
+
+      {medication.brand_name && medication.brand_name !== medication.name && (
+        <View style={styles.infoRow}>
+          <Text size="body" style={styles.label}>{t('brand_name')}</Text>
+          <Text size="body" weight="medium">{medication.brand_name}</Text>
+        </View>
+      )}
+
+      {medication.generic_name && (
+        <View style={styles.infoRow}>
+          <Text size="body" style={styles.label}>{t('generic_name')}</Text>
+          <Text size="body" weight="medium">{medication.generic_name}</Text>
+        </View>
+      )}
+
+      {medication.dosage_form && (
+        <View style={styles.infoRow}>
+          <Text size="body" style={styles.label}>{t('form')}</Text>
+          <Text size="body" weight="medium">{medication.dosage_form}</Text>
+        </View>
+      )}
+
+      {medication.strength && (
+        <View style={styles.infoRow}>
+          <Text size="body" style={styles.label}>{t('strength')}</Text>
+          <Text size="body" weight="medium">{medication.strength}</Text>
+        </View>
+      )}
+
+      <View style={styles.divider} />
+
+      {/* Current count and inventory */}
+      <View style={styles.section}>
+        <Text size="subheading" weight="bold" style={styles.sectionTitle}>
+          {t('storage')}
+        </Text>
+        <View style={styles.infoRow}>
+          <Text size="body" style={styles.label}>{t('current_count')}</Text>
+          <Text size="body" weight="bold">{medication.current_count}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text size="body" style={styles.label}>{t('initial_count')}</Text>
+          <Text size="body" weight="medium">{medication.initial_count}</Text>
+        </View>
+      </View>
+
+      {/* Expandable sections for additional information */}
+      {medication.notes && (
+        <ExpandableSection title={t('usage_information')}>
+          <Text size="body">{medication.notes}</Text>
+        </ExpandableSection>
+      )}
+
+      <View style={styles.buttonContainer}>
+        <Button 
+          title={t('continue_to_schedule')} 
+          onPress={() => router.push(`/medications/edit/${id}`)} 
+        />
+        <Button 
+          title={t('delete')} 
+          onPress={handleDelete} 
+          variant="secondary" 
+        />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.md,
     backgroundColor: theme.colors.background,
   },
-  name: {
-    fontSize: theme.fontSizes.title,
-    fontWeight: 'bold',
-    marginBottom: theme.spacing.sm,
+  content: {
+    padding: theme.spacing.md,
   },
-  strength: {
-    fontSize: theme.fontSizes.subheading,
-    color: theme.colors.textSecondary,
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginVertical: theme.spacing.lg,
+  },
+  name: {
+    textAlign: 'center',
     marginBottom: theme.spacing.md,
   },
-  count: {
-    fontSize: theme.fontSizes.body,
+  section: {
+    marginVertical: theme.spacing.md,
+  },
+  sectionTitle: {
     marginBottom: theme.spacing.sm,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+  },
+  label: {
+    color: theme.colors.textSecondary,
+    flex: 1,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: theme.spacing.md,
   },
   buttonContainer: {
     marginTop: theme.spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    gap: theme.spacing.md,
   },
 });

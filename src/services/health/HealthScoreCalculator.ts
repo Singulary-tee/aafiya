@@ -11,6 +11,10 @@ const GRACE_PERIOD_MS = NOTIFICATION_CONFIG.DEFAULT_GRACE_PERIOD_MINUTES * 60 * 
 /**
  * Service for calculating and managing a user's health score.
  * The health score is a gamified metric representing medication adherence.
+ * 
+ * NOTE: For new implementations, prefer using the utility functions in
+ * src/utils/healthScore.ts which include support for delayed doses and
+ * updated scoring logic. This service is maintained for backward compatibility.
  */
 export class HealthScoreCalculatorService {
     private doseLogRepository: DoseLogRepository;

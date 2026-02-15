@@ -9,6 +9,8 @@
   "recent_activity": "Recent Activity",
   "automatically_logged_as_missed": "Automatically logged as missed",
   "todays_doses": "Today's Doses",
+  "all_caught_up": "All caught up! 🎉",
+  "no_doses_today": "No doses scheduled for today.",
   "healthStatus": {
     "title": "Health Status",
     "healthy": "Healthy",
